@@ -1,0 +1,36 @@
+{
+	"folders": [
+		{
+			"path": ".."
+		}
+	],
+	"settings": {
+		// general
+		"python.defaultInterpreterPath": "python",
+		"python.terminal.activateEnvInCurrentTerminal": true,
+		"python.terminal.activateEnvironment": true,
+		"files.exclude": {
+			"**/__pycache__/": true,
+			"**/.pytest_cache": true,
+			"**/.python-version": true
+		},
+		// formatting
+		"python.formatting.provider": "autopep8",
+		"python.formatting.autopep8Path": "autopep8",
+		"editor.formatOnSave": true,
+		"editor.codeActionsOnSave": {
+			"source.organizeImports": true,
+		},
+		// linting
+		"python.linting.enabled": true,
+		"python.linting.lintOnSave": true,
+		"python.linting.pylintEnabled": false,
+		"python.linting.flake8Enabled": true,
+		// customisation
+		"workbench.colorCustomizations": {
+			"activityBar.background": "#2d114c",
+			"titleBar.activeBackground": "#3e176a",
+			"titleBar.activeForeground": "#f0beec"
+		},
+	}
+}
