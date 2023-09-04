@@ -7,13 +7,13 @@ import torchvision.models as models
 
 
 class MyResnetModel(pl.LightningModule):
-    def __init__(self, loss_fn, lr, momentum, label_map, bias):
+    def __init__(self, lr, momentum, num_classes, bias):
         super().__init__()
 
         self.model = models.resnet.resnet34(weights="DEFAULT")  # TODO: is DEFAULT still advised?
-        self.model.fc = torch.nn.Linear(in_features=512, out_features=len(label_map), bias=bias)
+        self.model.fc = torch.nn.Linear(in_features=512, out_features=num_classes, bias=bias)
 
-        self.loss_fn = loss_fn
+        self.loss_fn = torch.nn.CrossEntropyLoss()  # TODO: make configurable
         self.lr = lr
         self.momentum = momentum
         self.save_hyperparameters()

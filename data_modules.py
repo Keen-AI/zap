@@ -7,6 +7,7 @@ from torch import Generator
 from torch.utils.data import DataLoader, Dataset, random_split
 from torchvision import transforms
 from torchvision.datasets import MNIST
+from torchvision.transforms import Compose, Resize, ToTensor
 
 from dataset import CustomDatasetNew
 from utils import get_label_map
@@ -14,7 +15,7 @@ from utils import get_label_map
 
 # TODO: we probably (?) want to create classes for classification, detection, etc
 class CustomDataModule(pl.LightningDataModule):
-    def __init__(self, data_dir, transforms, split, batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
+    def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1, batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
         super().__init__()
         self.data_dir = Path(data_dir)
         
@@ -29,7 +30,8 @@ class CustomDataModule(pl.LightningDataModule):
         self.labels_df = self.labels_df.set_index('image')
         self.labels_df = self.labels_df[['label']]
         
-        self.transforms = transforms
+        self.transforms = Compose(transforms)
+
         self.batch_size=batch_size
         self.num_workers=num_workers
         self.pin_memory=pin_memory
@@ -44,7 +46,7 @@ class CustomDataModule(pl.LightningDataModule):
         
         dataset = CustomDatasetNew(filtered_images, self.labels_df, self.label_map, self.transforms)
         generator = Generator()  # TODO: look into using sklearn.model_selection.train_test_split instead
-        self.train_dataset, self.test_dataset, self.val_dataset = random_split(dataset, split, generator)
+        self.train_dataset, self.test_dataset, self.val_dataset = random_split(dataset, [train_split, test_split, val_split], generator)
 
         self.save_hyperparameters()
 
