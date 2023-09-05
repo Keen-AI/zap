@@ -16,6 +16,7 @@ class MyResnetModel(pl.LightningModule):
         self.loss_fn = torch.nn.CrossEntropyLoss()  # TODO: make configurable
         self.lr = lr
         self.momentum = momentum
+
         self.save_hyperparameters()
         
 

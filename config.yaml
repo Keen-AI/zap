@@ -6,12 +6,7 @@ trainer:
   devices: auto
   num_nodes: 1
   precision: 32-true
-  logger:
-    class_path: lightning.pytorch.loggers.MLFlowLogger
-    init_args:
-      experiment_name: "my_test_experiment"
-      log_model: true
-      tags: '{"tagA": 99, "tagB": 101}'
+  logger: null
   callbacks: null
   fast_dev_run: false
   max_epochs: 2
