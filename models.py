@@ -23,8 +23,7 @@ class MyResnetModel(pl.LightningModule):
         return probabilities
     
     def configure_optimizers(self) -> Any:
-        optimizer = torch.optim.SGD(self.parameters(), lr=self.lr, momentum=self.momentum)
-        return optimizer
+        return super().configure_optimizers()
 
     def training_step(self, batch, batch_idx):
         img, label = batch

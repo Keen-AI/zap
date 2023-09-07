@@ -1,12 +1,17 @@
-import mlflow
 from lightning.pytorch.cli import LightningCLI
 
-mlflow.set_experiment("my_sick_experiment")  # TODO: read from env
-mlflow.pytorch.autolog(registered_model_name='my_sick_model')  # TODO: read from env
 
-
-def cli_main():
-    cli = LightningCLI(save_config_kwargs={"overwrite": True})
+def cli_main():    
+    cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False)
+    
+    config = cli.config.as_dict()
+    
+    cli.trainer.fit(cli.model, cli.datamodule)
+    cli.trainer.test(cli.model, cli.datamodule, ckpt_path="best")
+    
+    preds = cli.trainer.predict(cli.model, cli.datamodule, return_predictions=True, ckpt_path="last")
+    
+    cli.trainer.logger.log_hyperparams({'optimizer': config['optimizer']})
 
 if __name__ == '__main__':
     cli_main()
