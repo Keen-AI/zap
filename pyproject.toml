@@ -1,0 +1,17 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "zap"
+version = "0.0.1"
+authors = [
+  { name="Petar Gyurov", email="petar.gyurov@keen-ai.com" },
+]
+description = "For zapping things"
+readme = "README.md"
+requires-python = ">=3.9"
+classifiers = [
+    "Programming Language :: Python :: 3",
+    "Operating System :: OS Independent",
+]

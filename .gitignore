@@ -1,6 +1,10 @@
 __pycache__/
+dist/
+
 data/
+lightning_logs/
 mlruns/
 
+.DS_Store
 *.python-version
 *.env
