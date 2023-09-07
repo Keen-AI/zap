@@ -31,3 +31,22 @@ class CustomDatasetNew(Dataset):
             img = self.transform(img)
         
         return img, label
+    
+
+class InferenceDatasetNew(Dataset):
+    def __init__(self, images, transform=None) -> None:
+        self.images = images
+        self.transform = transform
+        super().__init__()
+
+    def __len__(self):
+        return len(self.images)
+
+    def __getitem__(self, index: int) -> Any:
+        img = self.images[index]
+        img = Image.open(img)
+        
+        if self.transform is not None:
+            img = self.transform(img)
+
+        return img

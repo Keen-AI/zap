@@ -9,7 +9,7 @@ from torchvision import transforms
 from torchvision.datasets import MNIST
 from torchvision.transforms import Compose, Resize, ToTensor
 
-from dataset import CustomDatasetNew
+from dataset import CustomDatasetNew, InferenceDatasetNew
 from utils import get_label_map
 
 
@@ -17,6 +17,7 @@ from utils import get_label_map
 class CustomDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1, batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
         super().__init__()
+
         self.data_dir = Path(data_dir)
         
         self.image_dir = self.data_dir.joinpath('images')
@@ -47,6 +48,11 @@ class CustomDataModule(pl.LightningDataModule):
         dataset = CustomDatasetNew(filtered_images, self.labels_df, self.label_map, self.transforms)
         generator = Generator()  # TODO: look into using sklearn.model_selection.train_test_split instead
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(dataset, [train_split, test_split, val_split], generator)
+        
+        
+        self.predict_dir = Path(data_dir, 'predict', 'images')
+        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
+        self.predict_dataset = InferenceDatasetNew(prediction_images, transform=self.transforms)
 
         self.save_hyperparameters()
 
@@ -81,4 +87,4 @@ class CustomDataModule(pl.LightningDataModule):
     def predict_dataloader(self):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=self.shuffle)
+                          shuffle=False)
