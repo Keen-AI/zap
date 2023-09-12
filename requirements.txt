@@ -2,7 +2,7 @@
 opencv-python
 lightning
 jsonargparse[signatures]
-mlflow
+mlflow==2.5
 virtualenv  # required for mlflow
 
 # zap
