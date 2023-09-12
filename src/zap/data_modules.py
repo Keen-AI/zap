@@ -4,13 +4,12 @@ from pathlib import Path
 import lightning.pytorch as pl
 import pandas as pd
 from torch import Generator
-from torch.utils.data import DataLoader, Dataset, random_split
-from torchvision import transforms
+from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST
-from torchvision.transforms import Compose, Resize, ToTensor
+from torchvision.transforms import Compose
 
-from dataset import CustomDatasetNew, InferenceDatasetNew
-from utils import get_label_map
+from .dataset import CustomDatasetNew, InferenceDatasetNew
+from .utils import get_label_map
 
 
 # TODO: we probably (?) want to create classes for classification, detection, etc

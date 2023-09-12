@@ -23,12 +23,12 @@ trainer:
   max_epochs: 10
   max_time: null
 model:
-  class_path: models.MyResnetModel
+  class_path: zap.models.MyResnetModel
   init_args:
     num_classes: 12
     bias: true
 data:
-  class_path: data_modules.CustomDataModule
+  class_path: zap.data_modules.CustomDataModule
   init_args:
     data_dir: data
     transforms:
