@@ -7,7 +7,8 @@ import torch.nn as nn
 import torchvision.models as models
 
 
-class MyResnetModel(pl.LightningModule):
+# TODO: can we make this dynamic in terms of which ResNet is used like we did in kai-classification?
+class ResNet34(pl.LightningModule):
     def __init__(self, num_classes, bias):
         super().__init__()
 

@@ -20,29 +20,35 @@ trainer:
       monitor: val_loss
       save_top_k: 1
       mode: min
-  max_epochs: 10
+  max_epochs: 20
   max_time: null
+  log_every_n_steps: 2
 model:
-  class_path: zap.classification.models.ResNet34
+  class_path: zap.segmentation.models.UNet
   init_args:
-    num_classes: 12
-    bias: true
+    encoder_name: efficientnet-b2
+    encoder_depth: 5
+    encoder_weights: imagenet
+    activation: sigmoid
+    num_classes: 1
+    loss_fn:
+      class_path: torch.nn.BCEWithLogitsLoss
 data:
-  class_path: zap.classification.data_modules.ClassificationDataModule
+  class_path: zap.segmentation.data_modules.SegmentationDataModule
   init_args:
-    data_dir: data/classification
+    data_dir: data/segmentation
     transforms:
       - class_path: torchvision.transforms.ToTensor
       - class_path: torchvision.transforms.Resize
         init_args:
           size:
-            - 32
-            - 32
+            - 1024
+            - 1024
           antialias: true
-    train_split: 0.7
-    test_split: 0.2
-    val_split: 0.1
-    batch_size: 64
+    train_split: 0.6
+    test_split: 0
+    val_split: 0.4
+    batch_size: 3
     num_workers: 0
     pin_memory: true
     shuffle: true

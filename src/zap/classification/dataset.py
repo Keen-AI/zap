@@ -3,12 +3,13 @@ from typing import Any, Callable, Dict, List, Optional, Tuple
 
 import cv2
 import pandas as pd
+import torch
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 from tqdm import tqdm
 
 
-class CustomDatasetNew(Dataset):
+class ClassificationDataset(Dataset):
     def __init__(self, images, labels, label_map, transform=None) -> None:
         self.images = images
         self.labels = labels
@@ -32,7 +33,7 @@ class CustomDatasetNew(Dataset):
         
         return img, label
     
-
+# TODO: rename?
 class InferenceDatasetNew(Dataset):
     def __init__(self, images, transform=None) -> None:
         self.images = images

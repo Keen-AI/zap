@@ -2,8 +2,7 @@
 opencv-python
 lightning
 jsonargparse[signatures]
-mlflow==2.5
+mlflow==2.7.0
+pydantic==2.3.0
 virtualenv  # required for mlflow
-
-# zap
--e git+ssh://git@github.com/Keen-AI/zeus.git@0aa65c0796c4a8fba77e8fd1094fb10d249700dc#egg=zap
+pycocotools

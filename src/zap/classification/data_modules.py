@@ -8,12 +8,12 @@ from torch.utils.data import DataLoader, random_split
 from torchvision.datasets import MNIST
 from torchvision.transforms import Compose
 
-from .dataset import CustomDatasetNew, InferenceDatasetNew
-from .utils import get_label_map
+from ..utils import get_label_map
+from .dataset import ClassificationDataset, InferenceDatasetNew
 
 
 # TODO: we probably (?) want to create classes for classification, detection, etc
-class CustomDataModule(pl.LightningDataModule):
+class ClassificationDataModule(pl.LightningDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1, batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
         super().__init__()
 
@@ -44,7 +44,7 @@ class CustomDataModule(pl.LightningDataModule):
             else:
                 pass  # TODO: raise warning
         
-        dataset = CustomDatasetNew(filtered_images, self.labels_df, self.label_map, self.transforms)
+        dataset = ClassificationDataset(filtered_images, self.labels_df, self.label_map, self.transforms)
         generator = Generator()  # TODO: look into using sklearn.model_selection.train_test_split instead
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(dataset, [train_split, test_split, val_split], generator)
         
