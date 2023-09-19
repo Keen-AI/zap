@@ -11,7 +11,7 @@ from torch import Generator
 from torch.utils.data import DataLoader, random_split
 from torchvision.transforms import Compose
 
-from .dataset import SegmentationDataset
+from .dataset import InferenceSegmentationDataset, SegmentationDataset
 
 
 class SegmentationDataModule(pl.LightningDataModule):
@@ -24,7 +24,7 @@ class SegmentationDataModule(pl.LightningDataModule):
         self.image_dir = self.data_dir.joinpath('images')
 
         # TODO: fix allowed extensions
-        self.images = list(self.image_dir.glob('*.png')) + list(self.image_dir.glob('*.JPG'))
+        self.images = list(self.image_dir.glob('*.png')) + list(self.image_dir.glob('*.jpg'))
         
         self.coco = COCO(self.data_dir.joinpath('coco_labels.json'))
         self.mask_dir = self.data_dir.joinpath('masks')
@@ -47,9 +47,10 @@ class SegmentationDataModule(pl.LightningDataModule):
         generator = Generator()  # TODO: look into using sklearn.model_selection.train_test_split instead
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(dataset, [train_split, test_split, val_split], generator)
         
-        # self.predict_dir = Path(data_dir, 'predict', 'images')
-        # prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
-        # self.predict_dataset = InferenceDatasetNew(prediction_images, transform=self.transforms)
+        # TODO: cleanup
+        self.predict_dir = Path(data_dir, 'predict', 'images')
+        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
+        self.predict_dataset = InferenceSegmentationDataset(prediction_images, transform=self.transforms)
 
         self.save_hyperparameters()
 
