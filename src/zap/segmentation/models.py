@@ -36,3 +36,9 @@ class UNet(pl.LightningModule):
         output = self.model(img)
         loss = self.loss_fn(output, gt)
         self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+
+    def test_step(self, batch, batch_idx):
+        img, gt = batch
+        output = self.model(img)
+        loss = self.loss_fn(output, gt)
+        self.log('test_loss', loss, on_epoch=True, prog_bar=True)
