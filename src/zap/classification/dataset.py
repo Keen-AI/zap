@@ -1,12 +1,8 @@
-import os
-from typing import Any, Callable, Dict, List, Optional, Tuple
 
-import cv2
-import pandas as pd
-import torch
+from typing import Any, Tuple
+
 from PIL import Image
-from torch.utils.data import DataLoader, Dataset
-from tqdm import tqdm
+from torch.utils.data import Dataset
 
 
 class ClassificationDataset(Dataset):
@@ -33,21 +29,3 @@ class ClassificationDataset(Dataset):
         
         return img, label
     
-# TODO: rename?
-class InferenceDatasetNew(Dataset):
-    def __init__(self, images, transform=None) -> None:
-        self.images = images
-        self.transform = transform
-        super().__init__()
-
-    def __len__(self):
-        return len(self.images)
-
-    def __getitem__(self, index: int) -> Any:
-        img = self.images[index]
-        img = Image.open(img)
-        
-        if self.transform is not None:
-            img = self.transform(img)
-
-        return img

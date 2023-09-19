@@ -24,20 +24,3 @@ class SegmentationDataset(Dataset):
 
         return img, mask
     
-
-class InferenceSegmentationDataset(Dataset):
-    def __init__(self, images, transform=None) -> None:
-        self.images = images
-        self.transform = transform
-        super().__init__()
-
-    def __len__(self):
-        return len(self.images)
-
-    def __getitem__(self, index: int) -> Any:
-        img = Image.open(self.images[index]).convert('RGB')
-
-        if self.transform is not None:
-            img = self.transform(img)
-
-        return img
