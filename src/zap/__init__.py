@@ -1,3 +1,7 @@
+from .formatter import (format_lightning_warnings_and_logs,
+                        supress_pydantic_warnings)
+
+supress_pydantic_warnings()  # noqa
 
 from typing import Any
 
@@ -6,6 +10,7 @@ from lightning.pytorch.cli import LightningCLI
 from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
+format_lightning_warnings_and_logs()
 
 class Zap():
     def __init__(self) -> None:
