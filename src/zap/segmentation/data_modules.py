@@ -1,11 +1,6 @@
 
-import os
-import random
 from pathlib import Path
 
-import numpy as np
-from PIL import Image
-from pycocotools.coco import COCO
 from torch import Generator
 from torch.utils.data import random_split
 from torchvision.transforms import Compose
@@ -26,15 +21,7 @@ class SegmentationDataModule(ZapDataModule):
         # TODO: fix allowed extensions
         self.images = list(self.image_dir.glob('*.png')) + list(self.image_dir.glob('*.jpg'))
         
-        self.coco = COCO(self.data_dir.joinpath('coco_labels.json'))
         self.mask_dir = self.data_dir.joinpath('masks')
-        
-        try:
-            os.makedirs(self.mask_dir, exist_ok=False)
-            self._generate_masks_binary()
-        except FileExistsError as e:
-            pass  # TODO: handle
-        
         self.masks = list(self.mask_dir.glob('*.png'))
         self.transforms = Compose(transforms)
 
@@ -53,43 +40,3 @@ class SegmentationDataModule(ZapDataModule):
         self.predict_dataset = InferenceDataset(prediction_images, transform=self.transforms)
 
         self.save_hyperparameters()
-
-    def _generate_masks_binary(self):
-        cat_ids = self.coco.getCatIds()
-
-        for img in self.coco.imgs.values():
-            # get all annotations for this image
-            anns_ids = self.coco.getAnnIds(imgIds=img['id'], catIds=cat_ids, iscrowd=None)
-            anns = self.coco.loadAnns(anns_ids)
-
-            # create a mask using label encoding (each pixel is a value representing the class it belongs to)
-            mask = np.zeros((img['height'], img['width'], 3), dtype=np.uint8)
-            for a in anns:
-                m = self.coco.annToMask(a)
-                mask[m > 0] = 255
-
-            filename = Path(img['file_name']).stem + '.png'
-            Image.fromarray(mask).save(self.mask_dir.joinpath(filename))
-
-    def _generate_masks_multiclass(self):
-        cat_ids = self.coco.getCatIds()
-
-        class_colors = []
-        for _ in cat_ids:
-            rand_color = random.choices(range(256), k=3)
-            class_colors.append(rand_color)
-
-        for img in self.coco.imgs.values():
-            # get all annotations for this image
-            anns_ids = self.coco.getAnnIds(imgIds=img['id'], catIds=cat_ids, iscrowd=None)
-            anns = self.coco.loadAnns(anns_ids)
-
-            # create a mask using label encoding (each pixel is a value representing the class it belongs to)
-            mask = np.zeros((img['height'], img['width'], 3), dtype=np.uint8)
-            for a in anns:
-                m = self.coco.annToMask(a)
-                color = class_colors[a['category_id']]
-                mask[m > 0] = color
-
-            filename = Path(img['file_name']).stem + '.png'
-            Image.fromarray(mask).save(filename)
