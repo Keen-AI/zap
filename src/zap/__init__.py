@@ -14,18 +14,22 @@ format_lightning_warnings_and_logs()
 
 class Zap():
     def __init__(self) -> None:
-        self.zap = LightningCLI(save_config_kwargs={"overwrite": True}, run=False)
-        self.config = self.zap.config.as_dict()
-        self.zap.trainer.logger.log_hyperparams({'optimizer': self.config['optimizer']})
+        self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False)
+        self.config = self.cli.config.as_dict()
+        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config['optimizer']})
+        self.cli.trainer.logger.log_hyperparams({'train_set': len(self.cli.datamodule.train_dataset)})
+        self.cli.trainer.logger.log_hyperparams({'test_set': len(self.cli.datamodule.test_dataset)})
+        self.cli.trainer.logger.log_hyperparams({'val_set': len(self.cli.datamodule.val_dataset)})
+  
     
     def fit(self):
-        self.zap.trainer.fit(self.zap.model, self.zap.datamodule)
+        self.cli.trainer.fit(self.cli.model, self.cli.datamodule)
 
     def test(self):
-        self.zap.trainer.test(self.zap.model, self.zap.datamodule, ckpt_path="best")
+        self.cli.trainer.test(self.cli.model, self.cli.datamodule, ckpt_path="best")
 
     def predict(self):
-        preds = self.zap.trainer.predict(self.zap.model, self.zap.datamodule, return_predictions=True, ckpt_path="last")
+        preds = self.cli.trainer.predict(self.cli.model, self.cli.datamodule, return_predictions=True, ckpt_path="last")
         return preds
     
     
