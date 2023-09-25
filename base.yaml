@@ -28,10 +28,6 @@ trainer:
         patience: 5
         verbose: true
         strict: true
-    - class_path: lightning.pytorch.callbacks.BatchSizeFinder
-      init_args:
-        mode: binsearch
-        max_trials: 10
     - class_path: lightning.pytorch.callbacks.StochasticWeightAveraging
       init_args:
         swa_lrs: 1e-2
