@@ -7,109 +7,88 @@
 
 <small>🚧 IN DEVELOPMENT 🚧</small>
 
-<small>Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you to quickly train and test models for **classification**, **object detection** and **segmentation** without writing tonnes of boilerplate code.</small>
-
-<hr>
 </div>
 
-### Install Zap
+## About
+
+Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you to quickly train and test models for **classification**, **object detection** and **segmentation** without writing tonnes of boilerplate code.
+
+#### Supported models
+
+| Model    | Type             | Import Path                          |
+| -------- | ---------------- | ------------------------------------ |
+| ResNet34 | Classification   | `zap.classification.models.ResNet34` |
+| UNet     | Segmentation     | `zap.segmentation.models.UNet`       |
+| YOLO     | Object Detection | `zap.object_detection.models.YOLO`   |
+
+#### Things you get for free
+
+| Feature                     | Status | Notes                                     |
+| --------------------------- | :----: | ----------------------------------------- |
+| Automatic Logging           |   ✅   |                                           |
+| Mixed Precision             |   ✅   | 16-bit mixed                              |
+| Early Stopping              |   ✅   |                                           |
+| Stochastic Weight Averaging |   ✅   | Works well with `SGD` and `Adam`          |
+| Batch Finder                |   🚧   | Not robust enough yet                     |
+| Learning Rate Finder        |   🚧   | Not working with config-driven optimizers |
+| Gradient Accumulation       |   🚧   | Advanced feature, coming soon             |
+
+## How To Guide
+
+#### Installation
 
 ```
 pip install -e TODO
 ```
 
-### Example Usage
+#### Set up
 
-Using Zap is super simple. It's designed to be **config-driven**. That's why your `main.py` might look as simple as this:
+Using Zap is super simple. There are 2 key steps:
 
-```python
-from zap import Zap
+- Create the required config for your problem
+- Create a Python script to call it
 
-z = Zap()
-
-if __name__ == '__main__':
-    z.fit()
-    z.test()
-    preds = z.predict()
-```
-
-We can run this from the command line:
+#### Project Structure
 
 ```
-python main.py -c config.yaml
+my_project/
+├─ data/
+├─ main.py
+├─ config.yaml
+
 ```
 
-All of the parameters are defined in our `config.yaml` file (see Example Config section). In this file you define 3 key things:
+Your `data` folder will look differently depending on the type of problem you have.
 
-- model
-- optimizer
-- data setup
+#### Creating the config
 
-But you can control a whole heap of settings that the Lightning API allows you to configure.
+Let's start with the config. Zap has already done lot of the base configuration for you. We just need to tell it 3 things:
 
-### Supported Models
+- the model we want to use
+- the data we want to load
+- the optimizer we want to use
 
-Using different Zap models is easy.
-
-```python
-from zap.classification.models import ResNet34
-from zap.object_detection.models import ResNet50_FasterRCNN
-from zap.segmentation.models import UNet
-```
-
-Again, these can be plugged right into your `config.yaml`, not your `main.py`
-
-#### Classification Models
-
-- ResNet34
-
-#### Object Detection Models
-
-- TODO
-
-#### Segmentation Models
-
-- UNet
-
-### Example Configuration Files
-
-<details>
-<summary>Classification</summary>
+Create a `.yaml` file for your configuration. Let's define the model first. For a list of available models, see the Available Models section.
 
 ```yaml
-# lightning.pytorch==2.0.6
-seed_everything: true
-trainer:
-  accelerator: auto
-  strategy: auto
-  devices: auto
-  num_nodes: 1
-  precision: 32-true
-  logger:
-    class_path: lightning.pytorch.loggers.MLFlowLogger
-    init_args:
-      experiment_name: demo
-      log_model: true
-      tags:
-        example_tag_1: 123
-        example_tag_2: 789
-  callbacks:
-    class_path: lightning.pytorch.callbacks.ModelCheckpoint
-    init_args:
-      monitor: val_loss
-      save_top_k: 1
-      mode: min
-  max_epochs: 10
-  max_time: null
 model:
   class_path: zap.classification.models.ResNet34
   init_args:
     num_classes: 12
     bias: true
+```
+
+Now, in the same file, let's define the data source. We're also going to define:
+
+- transforms (in this example, `ToTensor` and `Resize` to `32x32`)
+- our train, test, val splits
+- our batch size (and a few other typical Pytorch settings)
+
+```yaml
 data:
   class_path: zap.classification.data_modules.ClassificationDataModule
   init_args:
-    data_dir: data/classification
+    data_dir: <YOUR_DATA_DIR> # see project structure section
     transforms:
       - class_path: torchvision.transforms.ToTensor
       - class_path: torchvision.transforms.Resize
@@ -125,85 +104,11 @@ data:
     num_workers: 0
     pin_memory: true
     shuffle: true
-optimizer:
-  class_path: torch.optim.Adam
-  init_args:
-    lr: 0.001
-    betas:
-      - 0.9
-      - 0.999
-    eps: 1.0e-08
-    weight_decay: 0.0
-    amsgrad: false
-    foreach: null
-    maximize: false
-    capturable: false
-    differentiable: false
-    fused: null
 ```
 
-</details>
-
-<br>
-
-<details>
-<summary>Segmentation</summary>
+And finally let's define our optimizer. In this example we'll use `Adam` with a learning rate of 0.001. For more optimizers you can explore the `torch.optim` module (or Pytorch docs), **but keep in mind that the Stochastic Weight Averaging technique does not support all optimizers.**
 
 ```yaml
-# lightning.pytorch==2.0.6
-seed_everything: true
-trainer:
-  accelerator: auto
-  strategy: auto
-  devices: auto
-  num_nodes: 1
-  precision: 32-true
-  logger:
-    class_path: lightning.pytorch.loggers.MLFlowLogger
-    init_args:
-      experiment_name: demo
-      log_model: true
-      tags:
-        example_tag_1: 123
-        example_tag_2: 789
-  callbacks:
-    class_path: lightning.pytorch.callbacks.ModelCheckpoint
-    init_args:
-      monitor: val_loss
-      save_top_k: 1
-      mode: min
-  max_epochs: 20
-  max_time: null
-  log_every_n_steps: 2
-model:
-  class_path: zap.segmentation.models.UNet
-  init_args:
-    encoder_name: efficientnet-b2
-    encoder_depth: 5
-    encoder_weights: imagenet
-    activation: sigmoid
-    num_classes: 1
-    loss_fn:
-      class_path: torch.nn.BCEWithLogitsLoss
-data:
-  class_path: zap.segmentation.data_modules.SegmentationDataModule
-  init_args:
-    data_dir: data/segmentation
-    transforms:
-      - class_path: torchvision.transforms.ToTensor
-      - class_path: torchvision.transforms.Resize
-        init_args:
-          size:
-            - 1024
-            - 1024
-          antialias: true
-    train_split: 0.6
-    test_split: 0
-    val_split: 0.4
-    batch_size: 3
-    num_workers: 0
-    pin_memory: true
-    shuffle: true
 optimizer:
   class_path: torch.optim.Adam
   init_args:
@@ -221,4 +126,32 @@ optimizer:
     fused: null
 ```
 
-</details>
+#### Creating the script
+
+This is the easy part. At the bare minimum, your script needs to:
+
+- create an instance of `Zap` and set the `experiment_name` param
+- call `fit`, `test`, `predict` based on your needs
+
+```python
+from zap import Zap
+
+z = Zap(experiment_name='my_experiment')
+
+if __name__ == '__main__':
+    z.fit()
+    z.test()
+    preds = z.predict()
+```
+
+#### Running
+
+We can call our `main.py` script and give it our `config.yaml` from the command line as follows:
+
+```
+python main.py -c config.yaml
+```
+
+## Overriding defaults
+
+TODO
