@@ -15,10 +15,17 @@ trainer:
         example_tag_1: 123
         example_tag_2: 789
   callbacks:
-    class_path: lightning.pytorch.callbacks.ModelCheckpoint
-    init_args:
-      monitor: val_loss
-      save_top_k: 1
-      mode: min
-  max_epochs: 1
-  max_time: null
+    - class_path: lightning.pytorch.callbacks.ModelCheckpoint
+      init_args:
+        monitor: val_loss
+        save_top_k: 1
+        mode: min
+    - class_path: lightning.pytorch.callbacks.EarlyStopping
+      init_args:
+        monitor: val_loss
+        mode: min
+        min_delta: 0
+        patience: 5
+        verbose: true
+        strict: true
+  max_epochs: 200
