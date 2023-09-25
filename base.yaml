@@ -32,4 +32,7 @@ trainer:
       init_args:
         mode: binsearch
         max_trials: 10
+    - class_path: lightning.pytorch.callbacks.RichModelSummary
+      init_args:
+        max_depth: 1
   max_epochs: 200
