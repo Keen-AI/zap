@@ -32,7 +32,9 @@ trainer:
       init_args:
         mode: binsearch
         max_trials: 10
-    - class_path: lightning.pytorch.callbacks.RichModelSummary
+    - class_path: lightning.pytorch.callbacks.StochasticWeightAveraging
       init_args:
-        max_depth: 1
+        swa_lrs: 1e-2
+        device: null # will be infered automatically but "None" is required because "cpu" is the default
+    - class_path: lightning.pytorch.callbacks.RichModelSummary
   max_epochs: 200
