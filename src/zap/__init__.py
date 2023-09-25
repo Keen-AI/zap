@@ -16,7 +16,7 @@ format_lightning_warnings_and_logs()
 
 class Zap():
     def __init__(self, experiment_name) -> None:
-        os.environ['ZAP_ENV_NAME'] = experiment_name
+        os.environ['ZAP_EXP_NAME'] = experiment_name
         self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False, 
                                 parser_kwargs={"parser_mode": "omegaconf", 
                                                "default_config_files": ['base.yaml']})

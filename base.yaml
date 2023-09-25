@@ -10,7 +10,7 @@ trainer:
     class_path: lightning.pytorch.loggers.MLFlowLogger
     init_args:
       log_model: true
-      experiment_name: ${oc.env:ZAP_ENV_NAME}
+      experiment_name: ${oc.env:ZAP_EXP_NAME}
   callbacks:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
