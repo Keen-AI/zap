@@ -11,9 +11,6 @@ trainer:
     init_args:
       log_model: true
       experiment_name: ${oc.env:ZAP_ENV_NAME}
-      tags:
-        example_tag_1: 123
-        example_tag_2: 789
   callbacks:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
