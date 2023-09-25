@@ -5,7 +5,7 @@ trainer:
   strategy: auto
   devices: auto
   num_nodes: 1
-  precision: 32-true
+  precision: 16-mixed
   logger:
     class_path: lightning.pytorch.loggers.MLFlowLogger
     init_args:
