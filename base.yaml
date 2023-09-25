@@ -24,8 +24,12 @@ trainer:
       init_args:
         monitor: val_loss
         mode: min
-        min_delta: 0
+        min_delta: 0.001
         patience: 5
         verbose: true
         strict: true
+    - class_path: lightning.pytorch.callbacks.BatchSizeFinder
+      init_args:
+        mode: binsearch
+        max_trials: 10
   max_epochs: 200
