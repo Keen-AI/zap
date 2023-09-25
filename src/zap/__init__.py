@@ -1,3 +1,5 @@
+import os
+
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
 
@@ -13,14 +15,18 @@ from torch.utils.data import DataLoader, Dataset
 format_lightning_warnings_and_logs()
 
 class Zap():
-    def __init__(self) -> None:
-        self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False)
+    def __init__(self, experiment_name) -> None:
+        os.environ['ZAP_ENV_NAME'] = experiment_name
+        self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False, 
+                                parser_kwargs={"parser_mode": "omegaconf", 
+                                               "default_config_files": ['base.yaml']})
+        
         self.config = self.cli.config.as_dict()
+
         self.cli.trainer.logger.log_hyperparams({'optimizer': self.config['optimizer']})
         self.cli.trainer.logger.log_hyperparams({'train_set': len(self.cli.datamodule.train_dataset)})
         self.cli.trainer.logger.log_hyperparams({'test_set': len(self.cli.datamodule.test_dataset)})
         self.cli.trainer.logger.log_hyperparams({'val_set': len(self.cli.datamodule.val_dataset)})
-  
     
     def fit(self):
         self.cli.trainer.fit(self.cli.model, self.cli.datamodule)

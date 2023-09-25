@@ -1,0 +1,24 @@
+# lightning.pytorch==2.0.6
+seed_everything: true
+trainer:
+  accelerator: auto
+  strategy: auto
+  devices: auto
+  num_nodes: 1
+  precision: 32-true
+  logger:
+    class_path: lightning.pytorch.loggers.MLFlowLogger
+    init_args:
+      log_model: true
+      experiment_name: ${oc.env:ZAP_ENV_NAME}
+      tags:
+        example_tag_1: 123
+        example_tag_2: 789
+  callbacks:
+    class_path: lightning.pytorch.callbacks.ModelCheckpoint
+    init_args:
+      monitor: val_loss
+      save_top_k: 1
+      mode: min
+  max_epochs: 1
+  max_time: null
