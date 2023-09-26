@@ -15,11 +15,11 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 
 #### Supported models
 
-| Model    | Type             | Import Path                          |
-| -------- | ---------------- | ------------------------------------ |
-| ResNet34 | Classification   | `zap.classification.models.ResNet34` |
-| UNet     | Segmentation     | `zap.segmentation.models.UNet`       |
-| YOLO     | Object Detection | `zap.object_detection.models.YOLO`   |
+| Model      | Type             | Import Path                          |
+| ---------- | ---------------- | ------------------------------------ |
+| ResNet34   | Classification   | `zap.classification.models.ResNet34` |
+| UNet       | Segmentation     | `zap.segmentation.models.UNet`       |
+| FasterRCNN | Object Detection | `Not ready yet ❌ `                  |
 
 #### Things you get for free
 
