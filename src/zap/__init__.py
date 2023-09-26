@@ -14,6 +14,9 @@ from torch.utils.data import DataLoader, Dataset
 
 format_lightning_warnings_and_logs()
 
+from ultralytics import YOLO
+
+
 class Zap():
     def __init__(self, experiment_name) -> None:
         os.environ['ZAP_EXP_NAME'] = experiment_name
@@ -37,7 +40,27 @@ class Zap():
     def predict(self):
         preds = self.cli.trainer.predict(self.cli.model, self.cli.datamodule, return_predictions=True, ckpt_path="last")
         return preds
+
+
+class ZapYOLO():
+    def __init__(self, data_file, config_file) -> None:
+        self.data_file = data_file
+        self.config_file = config_file
+        self.model = YOLO('yolov8n.pt')
+
+    def train(self):
+        metrics = self.model.train(data=self.data_file, cfg=self.config_file)
+        return metrics
+        
+    def val(self):
+        metrics = self.model.val()
+        return metrics
     
+    def predict(self, images, stream=True):
+        results = self.model(images, stream=stream)
+        return results
+
+        
     
 class ZapDataModule(LightningDataModule):
     def __init__(self) -> None:

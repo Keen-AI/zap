@@ -1,0 +1,12 @@
+train: ./images/train
+val: ./images/val
+test: ./images/val
+
+nc: 6
+names:
+  0: base
+  1: body
+  2: bottom_arm
+  3: middle_arm
+  4: peak
+  5: top_arm
