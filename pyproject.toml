@@ -14,11 +14,11 @@ requires-python = ">=3.9"
 dependencies = [
   "colorama",
   "opencv-python",
-  "lightning".
+  "lightning",
   "jsonargparse[signatures]",
   "mlflow==2.7.0",
   "pydantic==2.3.0",
-  "virtualenv"  # required for mlflow
+  "virtualenv",  # required for mlflow
   "pycocotools"
 ]
 classifiers = [
