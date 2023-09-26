@@ -17,7 +17,6 @@ dependencies = [
   "lightning==2.0.8",
   "jsonargparse[signatures]",
   "mlflow==2.7.0",
-  "pydantic==2.3.0",
   "virtualenv",  # required for mlflow
   "pycocotools"
 ]
