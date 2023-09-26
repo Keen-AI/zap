@@ -7,6 +7,8 @@
 
 <small>🚧 IN DEVELOPMENT 🚧</small>
 
+<small>v0.0.1</small>
+
 </div>
 
 ## About
@@ -15,11 +17,12 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 
 #### Supported models
 
-| Model      | Type             | Import Path                          |
-| ---------- | ---------------- | ------------------------------------ |
-| ResNet34   | Classification   | `zap.classification.models.ResNet34` |
-| UNet       | Segmentation     | `zap.segmentation.models.UNet`       |
-| FasterRCNN | Object Detection | `Not ready yet ❌ `                  |
+| Model      | Type             | Status | Import Path                          |
+| ---------- | ---------------- | :----: | ------------------------------------ |
+| ResNet34   | Classification   |   ✅   | `zap.classification.models.ResNet34` |
+| UNet       | Segmentation     |   ✅   | `zap.segmentation.models.UNet`       |
+| FasterRCNN | Object Detection |   ❌   | N/A                                  |
+| YOLO       | Multi            |   ❌   | N/A                                  |
 
 #### Things you get for free
 
@@ -33,12 +36,18 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 | Learning Rate Finder        |   🚧   | Not working with config-driven optimizers |
 | Gradient Accumulation       |   🚧   | Advanced feature, coming soon             |
 
+> **ℹ️ NOTE:** you can add any of the not-implemented features to your own config
+
 ## How To Guide
 
 #### Installation
 
-```
-pip install -e TODO
+```shell
+# if using SSH
+pip install git+ssh://git@github.com/Keen-AI/zap.git
+
+# if using HTTPS
+pip install git+https://github.com/Keen-AI/zap.git
 ```
 
 #### Set up
@@ -59,6 +68,8 @@ my_project/
 ```
 
 Your `data` folder will look differently depending on the type of problem you have.
+
+> ⚠️ TODO: add documentation on data setup for each problem (classification, segmentation, etc)
 
 #### Creating the config
 
@@ -153,5 +164,9 @@ python main.py -c config.yaml
 ```
 
 ## Overriding defaults
+
+TODO
+
+## Zap development
 
 TODO
