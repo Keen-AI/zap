@@ -2,6 +2,7 @@ from typing import Any
 
 import lightning.pytorch as pl
 import segmentation_models_pytorch as smp
+import torch.nn as nn
 
 
 class UNet(pl.LightningModule):
@@ -14,7 +15,7 @@ class UNet(pl.LightningModule):
                               classes=num_classes, 
                               activation=activation)
     
-        self.loss_fn = loss_fn
+        self.loss_fn = loss_fn or nn.BCEWithLogitsLoss()
         self.save_hyperparameters()
 
     def configure_optimizers(self) -> Any:
