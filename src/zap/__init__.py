@@ -17,9 +17,13 @@ format_lightning_warnings_and_logs()
 class Zap():
     def __init__(self, experiment_name) -> None:
         os.environ['ZAP_EXP_NAME'] = experiment_name
+
+        package_path = os.path.dirname(os.path.realpath(__file__))
+        base_config_path = os.path.join(package_path, 'base.yaml')
+        
         self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False, 
                                 parser_kwargs={"parser_mode": "omegaconf", 
-                                               "default_config_files": [os.path.join(os.getcwd(), 'base.yaml')]})
+                                               "default_config_files": [base_config_path]})
         self.config = self.cli.config.as_dict()
 
         self.cli.trainer.logger.log_hyperparams({'optimizer': self.config['optimizer']})
