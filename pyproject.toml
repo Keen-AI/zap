@@ -14,7 +14,7 @@ requires-python = ">=3.9"
 dependencies = [
   "colorama",
   "opencv-python",
-  "lightning",
+  "lightning==2.0.8",
   "jsonargparse[signatures]",
   "mlflow==2.7.0",
   "pydantic==2.3.0",
