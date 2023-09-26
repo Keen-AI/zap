@@ -19,8 +19,7 @@ class Zap():
         os.environ['ZAP_EXP_NAME'] = experiment_name
         self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, run=False, 
                                 parser_kwargs={"parser_mode": "omegaconf", 
-                                               "default_config_files": ['base.yaml']})
-        
+                                               "default_config_files": [os.path.join(os.getcwd(), 'base.yaml')]})
         self.config = self.cli.config.as_dict()
 
         self.cli.trainer.logger.log_hyperparams({'optimizer': self.config['optimizer']})
