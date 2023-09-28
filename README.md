@@ -50,7 +50,27 @@ pip install git+ssh://git@github.com/Keen-AI/zap.git
 pip install git+https://github.com/Keen-AI/zap.git
 ```
 
-#### Set up
+### GCP Setup
+
+Zap uses MLFlow to track runs and store their artifacts (e.g: checkpoints). MLFlow stores metadata for each run in a Postgres database, and artifacts in a Google Storage Bucket.
+
+This guide assumes you've installed the GCP CLI.
+
+1. Create a `.env` file and populate it with the master credentials:
+
+   ```
+   ZAP_DB_USER=
+   ZAP_DB_PWD=
+   ZAP_DB_HOST=
+   ZAP_DB_PORT=
+   ZAP_DB_NAME=
+
+   ZAP_BUCKET=
+   ```
+
+2. Authenticate the Google Cloud SDK: `gcloud auth application-default login`
+
+### Project Setup
 
 Using Zap is super simple. There are 2 key steps:
 

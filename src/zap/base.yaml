@@ -1,4 +1,3 @@
-# lightning.pytorch==2.0.6
 seed_everything: true
 trainer:
   accelerator: auto
@@ -6,9 +5,12 @@ trainer:
   devices: auto
   num_nodes: 1
   precision: 16-mixed
+  max_epochs: 100
   logger:
     class_path: lightning.pytorch.loggers.MLFlowLogger
     init_args:
+      artifact_location: gs://${oc.env:ZAP_BUCKET}/${oc.env:ZAP_EXP_NAME}
+      tracking_uri: postgresql://${oc.env:ZAP_DB_USER}:${oc.env:ZAP_DB_PWD}@${oc.env:ZAP_DB_HOST}:${oc.env:ZAP_DB_PORT}/${oc.env:ZAP_DB_NAME}
       log_model: true
       experiment_name: ${oc.env:ZAP_EXP_NAME}
   callbacks:
@@ -30,4 +32,3 @@ trainer:
         swa_lrs: 1e-2
         device: null # will be infered automatically but "None" is required because "cpu" is the default
     - class_path: lightning.pytorch.callbacks.RichModelSummary
-  max_epochs: 200
