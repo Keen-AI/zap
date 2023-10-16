@@ -2,7 +2,6 @@ import os
 
 from dotenv import load_dotenv
 
-load_dotenv()
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
 
@@ -16,10 +15,10 @@ from PIL import Image
 from torch.utils.data import DataLoader, Dataset
 
 format_lightning_warnings_and_logs()
-load_dotenv()
 
 class Zap():
-    def __init__(self, experiment_name) -> None:
+    def __init__(self, experiment_name, env_location) -> None:
+        load_dotenv(env_location)
         os.environ['ZAP_EXP_NAME'] = experiment_name
 
         package_path = os.path.dirname(os.path.realpath(__file__))
