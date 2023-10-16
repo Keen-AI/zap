@@ -4,25 +4,31 @@ build-backend = "hatchling.build"
 
 [project]
 name = "zap"
-version = "0.0.2-alpha"
+version = "0.0.3-alpha"
 authors = [{ name="Petar Gyurov", email="petar.gyurov@keen-ai.com" }]
 description = "Simple AI Pipeline"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
   "colorama",
-  "opencv-python",
-  "lightning==2.0.8",
-  "torchvision",
-  "jsonargparse[signatures]",
-  "omegaconf",
-  "mlflow==2.7.0",
-  "virtualenv",  # required for mlflow
-  "pycocotools",
   "google-cloud-storage",
-  "python-dotenv"
+  "jsonargparse[signatures]",
+  "lightning==2.0.8",
+  "mlflow==2.7.0",
+  "omegaconf",
+  "opencv-python",
+  "psycopg2-binary",
+  "pycocotools",
+  "python-dotenv",
+  "torchvision",
+  "virtualenv"  # required for mlflow
 ]
 classifiers = [
     "Programming Language :: Python :: 3",
     "Operating System :: OS Independent",
+]
+
+[tool.hatch.build]
+exclude = [
+  ".vscode/"
 ]

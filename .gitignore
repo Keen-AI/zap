@@ -5,7 +5,7 @@ data/
 lightning_logs/
 mlruns/
 
-.DS_Store
+*.DS_Store
 *.python-version
 *.env
 *.db
