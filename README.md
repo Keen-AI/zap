@@ -7,7 +7,7 @@
 
 <small>🚧 IN DEVELOPMENT 🚧</small>
 
-<small>v0.0.1</small>
+<small>v0.0.3-alpha</small>
 
 </div>
 
@@ -17,12 +17,16 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 
 #### Supported models
 
-| Model      | Type             | Status | Import Path                          |
-| ---------- | ---------------- | :----: | ------------------------------------ |
-| ResNet34   | Classification   |   ✅   | `zap.classification.models.ResNet34` |
-| UNet       | Segmentation     |   ✅   | `zap.segmentation.models.UNet`       |
-| FasterRCNN | Object Detection |   ❌   | N/A                                  |
-| YOLO       | Multi            |   ❌   | N/A                                  |
+| Model         | Type                    | Status | Import Path                          |
+| ------------- | ----------------------- | :----: | ------------------------------------ |
+| ResNet34      | Classification          |   ✅   | `zap.classification.models.ResNet34` |
+| UNet          | Segmentation            |   ✅   | `zap.segmentation.models.UNet`       |
+| FasterRCNN    | Object Detection        |   ❌   | N/A                                  |
+| YOLO          | Multi                   |   ❌   | N/A                                  |
+| DETA          | Object Detection        |   ❌   | N/A                                  |
+| RTMDet        | RT Object Detection     |   ❌   | N/A                                  |
+| RT-DETR       | RT Object Detection     |   ❌   | N/A                                  |
+| GroundingDino | 0-Shot Object Detection |   ❌   | N/A                                  |
 
 #### Things you get for free
 
@@ -68,7 +72,9 @@ This guide assumes you've installed the GCP CLI.
    ZAP_BUCKET=
    ```
 
-2. Authenticate the Google Cloud SDK: `gcloud auth application-default login`
+2. Set your GCP project to `internal`: `gcloud config set project <PROJECT_ID>`
+
+3. Authenticate the Google Cloud SDK: `gcloud auth application-default login`
 
 ### Project Setup
 
@@ -167,7 +173,7 @@ This is the easy part. At the bare minimum, your script needs to:
 ```python
 from zap import Zap
 
-z = Zap(experiment_name='my_experiment')
+z = Zap(experiment_name='my_experiment', env_location='.env')
 
 if __name__ == '__main__':
     z.fit()
