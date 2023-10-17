@@ -20,13 +20,20 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 | Model         | Type                    | Status | Import Path                          |
 | ------------- | ----------------------- | :----: | ------------------------------------ |
 | ResNet34      | Classification          |   ✅   | `zap.classification.models.ResNet34` |
+| ResNet50      | Classification          |   🚧   | N/A                                  |
+| ResNet152     | Classification          |   🚧   | N/A                                  |
+| DenseNet121   | Classification          |   🚧   | N/A                                  |
+| DenseNet201   | Classification          |   🚧   | N/A                                  |
 | UNet          | Segmentation            |   ✅   | `zap.segmentation.models.UNet`       |
-| FasterRCNN    | Object Detection        |   ❌   | N/A                                  |
-| YOLO          | Multi                   |   ❌   | N/A                                  |
-| DETA          | Object Detection        |   ❌   | N/A                                  |
-| RTMDet        | RT Object Detection     |   ❌   | N/A                                  |
-| RT-DETR       | RT Object Detection     |   ❌   | N/A                                  |
-| GroundingDino | 0-Shot Object Detection |   ❌   | N/A                                  |
+| UNet++        | Segmentation            |   🚧   | N/A                                  |
+| DeepLabV3     | Segmentation            |   🚧   | N/A                                  |
+| DeepLabV3+    | Segmentation            |   🚧   | N/A                                  |
+| FasterRCNN    | Object Detection        |   🚧   | N/A                                  |
+| YOLO          | Multi                   |   🚧   | N/A                                  |
+| DETA          | Object Detection        |   🚧   | N/A                                  |
+| RTMDet        | RT Object Detection     |   🚧   | N/A                                  |
+| RT-DETR       | RT Object Detection     |   🚧   | N/A                                  |
+| GroundingDino | 0-Shot Object Detection |   🚧   | N/A                                  |
 
 #### Things you get for free
 
