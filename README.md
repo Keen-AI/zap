@@ -183,10 +183,26 @@ if __name__ == '__main__':
 
 #### Running
 
+**First make sure you're running the Cloud SQL Proxy!**
+
 We can call our `main.py` script and give it our `config.yaml` from the command line as follows:
 
 ```
 python main.py -c config.yaml
+```
+
+## Viewing Results
+
+The results of your experiment will be logged in a central database and any checkpoints (and other artifacts) will be saved in a central bucket. We don't have a server running the MLFlow app at the moment but you can easily run it locally whilst still connected to the central repositories.
+
+**First make sure you're running the Cloud SQL Proxy!**
+
+Then replace the environment variables with their actual values and run:
+
+```
+mlflow server \
+  --backend-store-uri postgresql://${ZAP_DB_USER}:${ZAP_DB_PWD}@${ZAP_DB_HOST}:${ZAP_DB_PORT}/${ZAP_DB_NAME}
+  --artifacts-destination gs://<ZAP_BUCKET>/<YOUR_EXPERIMENT>
 ```
 
 ## Overriding defaults
