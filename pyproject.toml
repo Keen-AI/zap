@@ -20,6 +20,7 @@ dependencies = [
   "psycopg2-binary",
   "pycocotools",
   "python-dotenv",
+  "segmentation_models_pytorch",
   "torchvision",
   "virtualenv"  # required for mlflow
 ]
