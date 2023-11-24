@@ -37,11 +37,11 @@ class Zap():
     def fit(self):
         self.cli.trainer.fit(self.cli.model, self.cli.datamodule)
 
-    def test(self, ckpt_bath="best"):
-        self.cli.trainer.test(self.cli.model, self.cli.datamodule, ckpt_path=ckpt_bath)
+    def test(self, ckpt_path="best"):
+        self.cli.trainer.test(self.cli.model, self.cli.datamodule, ckpt_path=ckpt_path)
 
-    def predict(self, ckpt_bath="last"):
-        preds = self.cli.trainer.predict(self.cli.model, self.cli.datamodule, return_predictions=True, ckpt_path=ckpt_bath)
+    def predict(self, ckpt_path="last"):
+        preds = self.cli.trainer.predict(self.cli.model, self.cli.datamodule, return_predictions=True, ckpt_path=ckpt_path)
         return preds
     
     
