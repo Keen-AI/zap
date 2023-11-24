@@ -1,3 +1,4 @@
+import importlib
 import json
 import random
 from pathlib import Path
@@ -5,6 +6,13 @@ from pathlib import Path
 import numpy as np
 from PIL import Image
 from tqdm import tqdm
+
+
+def parse_loss_fn_module(module_path):
+    module_breakdown = module_path.split('.')
+    loss_fn = module_breakdown.pop()
+    loss_fn_module = importlib.import_module('.'.join(module_breakdown))
+    return getattr(loss_fn_module, loss_fn)()
 
 
 def get_label_map(label_map_path):

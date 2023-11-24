@@ -4,23 +4,26 @@ import lightning.pytorch as pl
 import segmentation_models_pytorch as smp
 import torch.nn as nn
 
+from ..utils import parse_loss_fn_module
+
 
 class UNet(pl.LightningModule):
-    def __init__(self, num_classes, encoder_name, encoder_depth, encoder_weights, activation, loss_fn):
+    def __init__(self, num_classes, encoder_name, encoder_depth,
+                 encoder_weights, activation, loss_fn):
         super().__init__()
 
-        self.model = smp.Unet(encoder_name=encoder_name, 
+        self.model = smp.Unet(encoder_name=encoder_name,
                               encoder_depth=encoder_depth,
-                              encoder_weights=encoder_weights, 
-                              classes=num_classes, 
+                              encoder_weights=encoder_weights,
+                              classes=num_classes,
                               activation=activation)
-    
-        self.loss_fn = loss_fn or nn.BCEWithLogitsLoss()
+
+        self.loss_fn = parse_loss_fn_module(loss_fn)
         self.save_hyperparameters()
 
     def configure_optimizers(self) -> Any:
         return super().configure_optimizers()
-    
+
     def forward(self, x):
         preds = self.model(x)
         return preds
