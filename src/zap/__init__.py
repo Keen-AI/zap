@@ -29,7 +29,7 @@ class Zap():
                                                "default_config_files": [base_config_path]})
         self.config = self.cli.config.as_dict()
 
-        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config['optimizer']})
+        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
         self.cli.trainer.logger.log_hyperparams({'train_set': len(self.cli.datamodule.train_dataset)})
         self.cli.trainer.logger.log_hyperparams({'test_set': len(self.cli.datamodule.test_dataset)})
         self.cli.trainer.logger.log_hyperparams({'val_set': len(self.cli.datamodule.val_dataset)})
