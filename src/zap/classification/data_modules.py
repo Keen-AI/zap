@@ -19,7 +19,7 @@ class ClassificationDataModule(ZapDataModule):
         self.data_dir = Path(data_dir)
         
         self.image_dir = self.data_dir.joinpath('images')
-        self.images = list(self.image_dir.glob('*.png')) + list(self.image_dir.glob('*.jpg'))
+        self.images = list(self.image_dir.glob('*.*'))
         
         self.label_map, self.label_map_reversed = get_label_map(self.data_dir.joinpath('label_map.json'))
         self.labels_df = pd.read_csv(self.data_dir.joinpath('labels.csv'))

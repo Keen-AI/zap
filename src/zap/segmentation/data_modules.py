@@ -19,7 +19,7 @@ class SegmentationDataModule(ZapDataModule):
         self.image_dir = self.data_dir.joinpath('images')
 
         # TODO: fix allowed extensions
-        self.images = list(self.image_dir.glob('*.png')) + list(self.image_dir.glob('*.jpg'))
+        self.images = list(self.image_dir.glob('*.*'))
         
         self.mask_dir = self.data_dir.joinpath('masks')
         self.masks = list(self.mask_dir.glob('*.png'))
