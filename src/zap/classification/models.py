@@ -22,14 +22,14 @@ class ResNet34(pl.LightningModule):
         pred = self.model(x)
         probabilities = nn.functional.softmax(pred, dim=1)
         return probabilities
-    
+
     def configure_optimizers(self) -> Any:
         return super().configure_optimizers()
 
     def training_step(self, batch, batch_idx):
         img, label = batch
         output = self.model(img)
-        
+
         loss = self.loss_fn(output, label)
         self.log('train_loss', loss, on_epoch=True, on_step=True)
         return loss

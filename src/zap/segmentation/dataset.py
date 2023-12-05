@@ -23,4 +23,3 @@ class SegmentationDataset(Dataset):
             mask = self.transform(mask)
 
         return img, mask
-    

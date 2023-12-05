@@ -17,7 +17,7 @@ class ColorFormatter(logging.Formatter):
     def format(self, record):
         log_message = super().format(record)
         colour = self.COLORS.get(record.levelname, Fore.RESET)
-        
+
         level = f"{colour+Style.BRIGHT}[{record.levelname}]{Style.RESET_ALL}"
         return f"{level} {colour}{log_message}"
 
@@ -33,7 +33,6 @@ class CustomWarningHandler:
         self.logger.warning(message)
 
 
-
 def supress_pydantic_warnings():
     # supress Pydantic UserWarnings entirely
     warnings.filterwarnings("ignore", category=UserWarning, module="pydantic")
@@ -42,14 +41,11 @@ def supress_pydantic_warnings():
 def format_lightning_warnings_and_logs():
     # initialise colorama
     init(autoreset=True)
-    
-    # remove Lightning's existing stream handler
+
+    #  remove Lightning's existing stream handler
     logger = logging.getLogger('lightning')
     for handler in logger.handlers:
         logger.removeHandler(handler)
 
-    
-
     # set the custom warning handler to print out formatted messages
     warnings.showwarning = CustomWarningHandler().write
-
