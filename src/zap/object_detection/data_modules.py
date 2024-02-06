@@ -1,34 +1,38 @@
-
-
-
-from .. import ZapDataModule
+from .. import ZapDataModule, InferenceDataset
 from .dataset import ObjectDetectionDataset
-
-from torch.utils.data import DataLoader
+from ..utils import parse_loss_fn_module
 from transformers import DetaImageProcessor
+from torch.utils.data import random_split
+from pathlib import Path
+from torch import Generator
 
 
 class ObjectDetectionDataModule(ZapDataModule):
-    def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
+    def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True,
+                 shuffle=True, collate_fn=None, train_split=0.7, test_split=0.2, val_split=0.1,):
         super().__init__()
         self.processor = DetaImageProcessor.from_pretrained(
             "jozhang97/deta-resnet-50",
             size={
                 "shortest_edge": size[0],
                 "longest_edge": size[1]})
-        
+
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
         self.shuffle = shuffle
+        self.collate_fn = parse_loss_fn_module(collate_fn)
 
-        self.train_dataset = ObjectDetectionDataset(
-                img_folder=data_dir+"/train",
-                processor=self.processor)
-        self.val_dataset = ObjectDetectionDataset(
-                img_folder=data_dir+"/val",
-                processor=self.processor, train=False)
-        self.test_dataset = ObjectDetectionDataset(
-                img_folder=data_dir+"/val",
-                processor=self.processor,
-                train=False)
+        dataset = ObjectDetectionDataset(
+            img_folder=data_dir,
+            processor=self.processor)
+
+        generator = Generator()
+        self.train_dataset, self.test_dataset, self.val_dataset = random_split(
+            dataset, [train_split, test_split, val_split], generator)
+
+        # self.predict_dir = Path(data_dir, 'predict', 'images')
+        # prediction_images = list(self.predict_dir.glob(
+        #     '*.png')) + list(self.predict_dir.glob('*.jpg'))
+        # self.predict_dataset = InferenceDataset(
+        #     prediction_images)

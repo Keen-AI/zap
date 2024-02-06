@@ -18,7 +18,7 @@ class DeepLabV3Plus(pl.LightningModule):
                                        classes=num_classes,
                                        activation=activation)
 
-        self.loss_fn = parse_loss_fn_module(loss_fn)
+        self.loss_fn = parse_loss_fn_module(loss_fn)()
         self.save_hyperparameters()
 
     def configure_optimizers(self) -> Any:
@@ -59,7 +59,7 @@ class UNet(pl.LightningModule):
                               classes=num_classes,
                               activation=activation)
 
-        self.loss_fn = parse_loss_fn_module(loss_fn)
+        self.loss_fn = parse_loss_fn_module(loss_fn)()
         self.save_hyperparameters()
 
     def configure_optimizers(self) -> Any:

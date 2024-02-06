@@ -30,7 +30,7 @@ class Zap():
                                                "default_config_files": [base_config_path]})
         self.config = self.cli.config.as_dict()
 
-        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
+        # self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
         self.cli.trainer.logger.log_hyperparams({'train_set': len(self.cli.datamodule.train_dataset)})
         self.cli.trainer.logger.log_hyperparams({'test_set': len(self.cli.datamodule.test_dataset)})
         self.cli.trainer.logger.log_hyperparams({'val_set': len(self.cli.datamodule.val_dataset)})
@@ -68,22 +68,22 @@ class ZapDataModule(LightningDataModule):
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=self.shuffle)
+                          shuffle=self.shuffle, collate_fn=self.collate_fn)
 
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=False, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=False, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=False, collate_fn=self.collate_fn)
 
 
 class InferenceDataset(Dataset):

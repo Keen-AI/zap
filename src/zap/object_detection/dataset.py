@@ -7,8 +7,8 @@ import os
 
 
 class ObjectDetectionDataset(torchvision.datasets.CocoDetection):
-    def __init__(self, img_folder, processor, train=True):
-        ann_file = os.path.join(img_folder, "custom_train.json" if train else "custom_val.json")
+    def __init__(self, img_folder, processor):
+        ann_file = os.path.join(img_folder, "dataset.json")
         super(ObjectDetectionDataset, self).__init__(img_folder, ann_file)
         self.processor = processor
 
@@ -19,13 +19,10 @@ class ObjectDetectionDataset(torchvision.datasets.CocoDetection):
 
         # preprocess image and target (converting target to DETR format, resizing
         # + normalization of both image and target)
-        batch = {}
         image_id = self.ids[idx]
         target = {'image_id': image_id, 'annotations': target}
         encoding = self.processor(images=img, annotations=target, return_tensors="pt")
         pixel_values = encoding["pixel_values"].squeeze()  # remove batch dimension
-        batch['labels'] = [encoding["labels"][0]]  # remove batch dimension
-        encoding = self.processor.pad([pixel_values], return_tensors="pt")
-        batch['pixel_values'] = encoding['pixel_values']
-        batch['pixel_mask'] = encoding['pixel_mask']
-        return batch
+        target = encoding["labels"][0]  # remove batch dimension
+
+        return pixel_values, target

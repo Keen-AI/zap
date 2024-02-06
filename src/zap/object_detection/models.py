@@ -2,6 +2,7 @@
 import lightning.pytorch as pl
 from transformers import DetaForObjectDetection
 import torch
+from typing import Any
 
 
 class Deta(pl.LightningModule):
@@ -25,15 +26,9 @@ class Deta(pl.LightningModule):
         return outputs
 
     def common_step(self, batch, batch_idx):
-        pixel_values = batch["pixel_values"][0]
-        pixel_mask = batch["pixel_mask"][0]
+        pixel_values = batch["pixel_values"]
+        pixel_mask = batch["pixel_mask"]
         labels = [{k: v.to(self.device) for k, v in t.items()} for t in batch["labels"]]
-
-        for k in labels[0].keys():
-            labels[0][k] = labels[0][k][0]
-
-        print(labels)
-
         outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
 
         loss = outputs.loss
@@ -45,7 +40,7 @@ class Deta(pl.LightningModule):
         loss, loss_dict = self.common_step(batch, batch_idx)
         # logs metrics for each training_step,
         # and the average across the epoch
-        self.log("training_loss", loss)
+        self.log("train_loss", loss)
         for k, v in loss_dict.items():
             self.log("train_" + k, v.item())
 
@@ -53,21 +48,11 @@ class Deta(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, loss_dict = self.common_step(batch, batch_idx)
-        self.log("validation_loss", loss)
+        self.log("val_loss", loss)
         for k, v in loss_dict.items():
             self.log("validation_" + k, v.item())
 
         return loss
 
-    def configure_optimizers(self):
-        param_dicts = [
-            {"params": [p for n, p in self.named_parameters() if "backbone" not in n and p.requires_grad]},
-            {
-                "params": [p for n, p in self.named_parameters() if "backbone" in n and p.requires_grad],
-                "lr": self.lr_backbone,
-            },
-        ]
-        optimizer = torch.optim.AdamW(param_dicts, lr=self.lr,
-                                      weight_decay=self.weight_decay)
-
-        return optimizer
+    def configure_optimizers(self) -> Any:
+        return super().configure_optimizers()
