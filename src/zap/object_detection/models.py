@@ -19,6 +19,7 @@ class Deta(pl.LightningModule):
         self.lr = lr
         self.lr_backbone = lr_backbone
         self.weight_decay = weight_decay
+        self.save_hyperparameters()
 
     def forward(self, pixel_values, pixel_mask):
         outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
@@ -43,7 +44,6 @@ class Deta(pl.LightningModule):
         self.log("train_loss", loss)
         for k, v in loss_dict.items():
             self.log("train_" + k, v.item())
-
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -51,6 +51,16 @@ class Deta(pl.LightningModule):
         self.log("val_loss", loss)
         for k, v in loss_dict.items():
             self.log("validation_" + k, v.item())
+
+        return loss
+
+    def test_step(self, batch, batch_idx):
+        loss, loss_dict = self.common_step(batch, batch_idx)
+        # logs metrics for each training_step,
+        # and the average across the epoch
+        self.log("test_loss", loss)
+        for k, v in loss_dict.items():
+            self.log("test_" + k, v.item())
 
         return loss
 

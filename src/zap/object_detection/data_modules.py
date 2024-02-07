@@ -31,8 +31,10 @@ class ObjectDetectionDataModule(ZapDataModule):
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
-        # self.predict_dir = Path(data_dir, 'predict', 'images')
-        # prediction_images = list(self.predict_dir.glob(
-        #     '*.png')) + list(self.predict_dir.glob('*.jpg'))
-        # self.predict_dataset = InferenceDataset(
-        #     prediction_images)
+        self.predict_dir = Path(data_dir, 'predict', 'images')
+        prediction_images = list(self.predict_dir.glob(
+            '*.png')) + list(self.predict_dir.glob('*.jpg'))
+        self.predict_dataset = InferenceDataset(
+            prediction_images)
+
+        self.save_hyperparameters()
