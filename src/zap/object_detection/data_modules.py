@@ -9,8 +9,13 @@ from torch import Generator
 
 class ObjectDetectionDataModule(ZapDataModule):
     def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True,
-                 shuffle=True, collate_fn=None, train_split=0.7, test_split=0.2, val_split=0.1,):
+                 shuffle=True, collate_fn=None, train_split=0.7, test_split=0.2, val_split=0.1, converter=None):
         super().__init__()
+
+        if converter:
+            converter_fn = parse_loss_fn_module(converter)
+            converter_fn(data_dir)
+
         self.processor = DetaImageProcessor.from_pretrained(
             "jozhang97/deta-resnet-50",
             size={

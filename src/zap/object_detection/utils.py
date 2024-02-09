@@ -4,8 +4,8 @@ from transformers import DetaImageProcessor
 processor = DetaImageProcessor.from_pretrained(
     "jozhang97/deta-resnet-50",
     size={
-        "shortest_edge": 400,
-        "longest_edge": 666})
+        "shortest_edge": 432,
+        "longest_edge": 768})
 
 
 def collate_fn(batch):

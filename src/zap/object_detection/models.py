@@ -30,7 +30,12 @@ class Deta(pl.LightningModule):
         pixel_values = batch["pixel_values"]
         pixel_mask = batch["pixel_mask"]
         labels = [{k: v.to(self.device) for k, v in t.items()} for t in batch["labels"]]
-        outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
+        try:
+            outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
+        except AssertionError:
+            print("Assertion Error!")
+            print(pixel_values)
+            return {}, {}
 
         loss = outputs.loss
         loss_dict = outputs.loss_dict
