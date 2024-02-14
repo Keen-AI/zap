@@ -1,8 +1,9 @@
 
-import lightning.pytorch as pl
-from transformers import DetaForObjectDetection
-import torch
 from typing import Any
+
+import lightning.pytorch as pl
+import torch
+from transformers import DetaForObjectDetection
 
 
 class Deta(pl.LightningModule):
@@ -69,5 +70,14 @@ class Deta(pl.LightningModule):
 
         return loss
 
-    def configure_optimizers(self) -> Any:
-        return super().configure_optimizers()
+    def configure_optimizers(self):
+        param_dicts = [
+            {"params": [p for n, p in self.named_parameters() if "backbone" not in n and p.requires_grad]},
+            {
+                "params": [p for n, p in self.named_parameters() if "backbone" in n and p.requires_grad],
+                "lr": self.lr_backbone,
+            },
+        ]
+        optimizer = torch.optim.AdamW(param_dicts, lr=self.lr,
+                                      weight_decay=self.weight_decay)
+        return optimizer
