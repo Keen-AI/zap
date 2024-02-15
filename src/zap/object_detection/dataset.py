@@ -1,9 +1,7 @@
 
-from typing import Any, Tuple
-
-from PIL import Image
-import torchvision
 import os
+
+import torchvision
 
 
 class ObjectDetectionDataset(torchvision.datasets.CocoDetection):
