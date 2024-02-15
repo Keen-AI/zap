@@ -1,5 +1,4 @@
-
-from typing import Any
+# TODO: add reference to source/author
 
 import lightning.pytorch as pl
 import torch
@@ -22,7 +21,7 @@ class Deta(pl.LightningModule):
         self.weight_decay = weight_decay
         self.save_hyperparameters()
 
-    def forward(self, pixel_values, pixel_mask):
+    def forward(self, pixel_values, pixel_mask=None):
         outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
 
         return outputs
@@ -33,7 +32,7 @@ class Deta(pl.LightningModule):
         labels = [{k: v.to(self.device) for k, v in t.items()} for t in batch["labels"]]
         try:
             outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
-        except AssertionError:
+        except AssertionError:  # TODO: handle this properly
             print("Assertion Error!")
             print(pixel_values)
             return {}, {}
