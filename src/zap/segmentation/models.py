@@ -4,7 +4,7 @@ import lightning.pytorch as pl
 import segmentation_models_pytorch as smp
 import torch.nn as nn  # noqa
 
-from ..utils import parse_loss_fn_module
+from ..utils import parse_module_from_string
 
 
 class DeepLabV3Plus(pl.LightningModule):
@@ -18,7 +18,7 @@ class DeepLabV3Plus(pl.LightningModule):
                                        classes=num_classes,
                                        activation=activation)
 
-        self.loss_fn = parse_loss_fn_module(loss_fn)()
+        self.loss_fn = parse_module_from_string(loss_fn)()
         self.save_hyperparameters()
 
     def configure_optimizers(self) -> Any:
@@ -59,7 +59,7 @@ class UNet(pl.LightningModule):
                               classes=num_classes,
                               activation=activation)
 
-        self.loss_fn = parse_loss_fn_module(loss_fn)()
+        self.loss_fn = parse_module_from_string(loss_fn)()
         self.save_hyperparameters()
 
     def configure_optimizers(self) -> Any:

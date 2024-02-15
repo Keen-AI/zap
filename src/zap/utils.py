@@ -8,7 +8,7 @@ from PIL import Image
 from tqdm import tqdm
 
 
-def parse_loss_fn_module(module_path):
+def parse_module_from_string(module_path):
     module_breakdown = module_path.split('.')
     loss_fn = module_breakdown.pop()
     loss_fn_module = importlib.import_module('.'.join(module_breakdown))
