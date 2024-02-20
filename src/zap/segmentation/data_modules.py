@@ -11,7 +11,7 @@ from .dataset import SegmentationDataset
 
 class SegmentationDataModule(ZapDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1,
-                 batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
+                 batch_size=1, num_workers=0, pin_memory=True, shuffle=True, collate_fn=None):
         super().__init__()
 
         self.data_dir = Path(data_dir)
@@ -29,6 +29,7 @@ class SegmentationDataModule(ZapDataModule):
         self.num_workers = num_workers
         self.pin_memory = pin_memory
         self.shuffle = shuffle
+        self.collate_fn = collate_fn
 
         dataset = SegmentationDataset(
             self.images, self.masks, transform=self.transforms)
