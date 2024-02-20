@@ -6,6 +6,7 @@ trainer:
   num_nodes: 1
   precision: 16-mixed
   max_epochs: 100
+  default_root_dir: mlruns
   logger:
     class_path: lightning.pytorch.loggers.MLFlowLogger
     init_args:
