@@ -7,7 +7,7 @@
 
 <small>🚧 IN DEVELOPMENT 🚧</small>
 
-<small>v0.0.3-alpha</small>
+<small>v0.0.4-alpha</small>
 
 </div>
 
@@ -17,205 +17,158 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 
 #### Supported models
 
-| Model         | Type                    | Status | Import Path                          |
-| ------------- | ----------------------- | :----: | ------------------------------------ |
-| ResNet34      | Classification          |   ✅   | `zap.classification.models.ResNet34` |
-| ResNet50      | Classification          |   🚧   | N/A                                  |
-| ResNet152     | Classification          |   🚧   | N/A                                  |
-| DenseNet121   | Classification          |   🚧   | N/A                                  |
-| DenseNet201   | Classification          |   🚧   | N/A                                  |
-| UNet          | Segmentation            |   ✅   | `zap.segmentation.models.UNet`       |
-| UNet++        | Segmentation            |   🚧   | N/A                                  |
-| DeepLabV3     | Segmentation            |   🚧   | N/A                                  |
-| DeepLabV3+    | Segmentation            |   🚧   | N/A                                  |
-| FasterRCNN    | Object Detection        |   🚧   | N/A                                  |
-| YOLO          | Multi                   |   🚧   | N/A                                  |
-| DETA          | Object Detection        |   🚧   | N/A                                  |
-| RTMDet        | RT Object Detection     |   🚧   | N/A                                  |
-| RT-DETR       | RT Object Detection     |   🚧   | N/A                                  |
-| GroundingDino | 0-Shot Object Detection |   🚧   | N/A                                  |
+| Model       | Type             | Status | Loss              | Import Path                             |
+| ----------- | ---------------- | :----: | ----------------- | --------------------------------------- |
+| ResNet34    | Classification   |   ✅   | CrossEntropyLoss  | `zap.classification.models.ResNet34`    |
+| UNet        | Segmentation     |   ✅   | BCEWithLogitsLoss | `zap.segmentation.models.UNet`          |
+| DeepLabV3+  | Segmentation     |   ✅   | BCEWithLogitsLoss | `zap.segmentation.models.DeepLabV3Plus` |
+| DETA        | Object Detection |   ✅   | Combination       | `zap.object_detection.models.DETA`      |
+| ResNet50    | Classification   |   🚧   | -                 | -                                       |
+| ResNet152   | Classification   |   🚧   | -                 | -                                       |
+| DenseNet121 | Classification   |   🚧   | -                 | -                                       |
+| DenseNet201 | Classification   |   🚧   | -                 | -                                       |
+| UNet++      | Segmentation     |   🚧   | -                 | -                                       |
+| DeepLabV3   | Segmentation     |   🚧   | -                 | -                                       |
+| FasterRCNN  | Object Detection |   🚧   | -                 | -                                       |
+
+> **ℹ️ Coming soon:** dynamic loss functions
 
 #### Things you get for free
 
-| Feature                     | Status | Notes                                     |
-| --------------------------- | :----: | ----------------------------------------- |
-| Automatic Logging           |   ✅   |                                           |
-| Mixed Precision             |   ✅   | 16-bit mixed                              |
-| Early Stopping              |   ✅   |                                           |
-| Stochastic Weight Averaging |   ✅   | Works well with `SGD` and `Adam`          |
-| Batch Finder                |   🚧   | Not robust enough yet                     |
-| Learning Rate Finder        |   🚧   | Not working with config-driven optimizers |
-| Gradient Accumulation       |   🚧   | Advanced feature, coming soon             |
+These are some of the options that Lightning makes available and we've included in the base config.
 
-> **ℹ️ NOTE:** you can add any of the not-implemented features to your own config
+| Feature                             | Status | Notes                                          |
+| ----------------------------------- | :----: | ---------------------------------------------- |
+| Automatic train/test/val splitting  |   ✅   | 70/20/10 (Configurable)                        |
+| Automatic Logging                   |   ✅   | Using MLFlow and a database                    |
+| Mixed Precision                     |   ✅   | 16-bit mixed                                   |
+| Early Stopping                      |   ✅   | Stop training if no improvement after 5 epochs |
+| Stochastic Weight Averaging         |   ✅   | Works well with `SGD` and `Adam`               |
+| Batch Finder                        |   🚧   | Not robust enough yet                          |
+| Learning Rate Finder                |   🚧   | Not working with config-driven optimizers      |
+| Gradient Accumulation               |   🚧   | TODO                                           |
+| Inference Boilerplate               |   🚧   | TODO                                           |
+| Data/result Visualisation           |   🚧   | TODO                                           |
+| Detailed val/test metrics and plots |   🚧   | TODO                                           |
 
 ## How To Guide
 
-#### Installation
+### Installation
 
 ```shell
 # if using SSH
 pip install git+ssh://git@github.com/Keen-AI/zap.git
+```
 
+or
+
+```shell
 # if using HTTPS
 pip install git+https://github.com/Keen-AI/zap.git
 ```
 
-### GCP Setup
+### Database for logging experiments
 
-Zap uses MLFlow to track runs and store their artifacts (e.g: checkpoints). MLFlow stores metadata for each run in a Postgres database, and artifacts in a Google Storage Bucket.
+MLFlow logs each run, and the hyperparameters and metrics that come with it, to a data store. Whilst [MLFlow supports a number of different types of data stores](https://mlflow.org/docs/latest/tracking/backend-stores.html?highlight=sqlite#supported-store-types) we recommend going with a local or cloud database to start with. We recommend a PostgreSQL database instance, but to get started immediately you can set `ZAP_TRACKING_URI` to `sqlite:///mydb.sqlite` which will create a local SQLite database.
 
-This guide assumes you've installed the GCP CLI.
+### Environment file
 
-1. Create a `.env` file and populate it with the master credentials:
-
-   ```
-   ZAP_DB_USER=
-   ZAP_DB_PWD=
-   ZAP_DB_HOST=
-   ZAP_DB_PORT=
-   ZAP_DB_NAME=
-
-   ZAP_BUCKET=
-   ```
-
-2. Set your GCP project to `internal`: `gcloud config set project <PROJECT_ID>`
-
-3. Authenticate the Google Cloud SDK: `gcloud auth application-default login`
-
-### Project Setup
-
-Using Zap is super simple. There are 2 key steps:
-
-- Create the required config for your problem
-- Create a Python script to call it
-
-#### Project Structure
+A `.env` file is required to conveniently store some mandatory settings and credentials that you don't want to hardcode.
+Create the `.env` file and populate it with these mandatory variables:
 
 ```
-my_project/
-├─ data/
-├─ main.py
-├─ config.yaml
+# the name of your current project/experiment
+ZAP_EXPERIMENT_NAME=
 
+# the artifact location is typically a bucket or a local directory; if left blank it will save checkpoints locally
+ZAP_ARTIFACT_LOCATION=
+
+# the database connection string
+ZAP_TRACKING_URI=
 ```
 
-Your `data` folder will look differently depending on the type of problem you have.
+### Data and Configuration setup
 
-> ⚠️ TODO: add documentation on data setup for each problem (classification, segmentation, etc)
+Depending on which task you need, classification, object detection or segmentation, Zap expects a slightly different data folder structure.
 
-#### Creating the config
+Here are the guides for each task:
 
-Let's start with the config. Zap has already done lot of the base configuration for you. We just need to tell it 3 things:
+- [Classification](docs/classification_guide.md)
+- [Object Detection](docs/object_detection_guide.md)
+- [Segmentation](docs/segmentation_guide.md)
 
-- the model we want to use
-- the data we want to load
-- the optimizer we want to use
+Once you've finished the guide you need, return to this step.
 
-Create a `.yaml` file for your configuration. Let's define the model first. For a list of available models, see the Available Models section.
+## Running
 
-```yaml
-model:
-  class_path: zap.classification.models.ResNet34
-  init_args:
-    num_classes: 12
-    bias: true
-```
-
-Now, in the same file, let's define the data source. We're also going to define:
-
-- transforms (in this example, `ToTensor` and `Resize` to `32x32`)
-- our train, test, val splits
-- our batch size (and a few other typical Pytorch settings)
-
-```yaml
-data:
-  class_path: zap.classification.data_modules.ClassificationDataModule
-  init_args:
-    data_dir: <YOUR_DATA_DIR> # see project structure section
-    transforms:
-      - class_path: torchvision.transforms.ToTensor
-      - class_path: torchvision.transforms.Resize
-        init_args:
-          size:
-            - 32
-            - 32
-          antialias: true
-    train_split: 0.7
-    test_split: 0.2
-    val_split: 0.1
-    batch_size: 64
-    num_workers: 0
-    pin_memory: true
-    shuffle: true
-```
-
-And finally let's define our optimizer. In this example we'll use `Adam` with a learning rate of 0.001. For more optimizers you can explore the `torch.optim` module (or Pytorch docs), **but keep in mind that the Stochastic Weight Averaging technique does not support all optimizers.**
-
-```yaml
-optimizer:
-  class_path: torch.optim.Adam
-  init_args:
-    lr: 0.001
-    betas:
-      - 0.9
-      - 0.999
-    eps: 1.0e-08
-    weight_decay: 0.0
-    amsgrad: false
-    foreach: null
-    maximize: false
-    capturable: false
-    differentiable: false
-    fused: null
-```
-
-#### Creating the script
-
-This is the easy part. At the bare minimum, your script needs to:
-
-- create an instance of `Zap` and set the `experiment_name` param
-- call `fit`, `test`, `predict` based on your needs
+In order to run things let's create a `main.py` file.
 
 ```python
 from zap import Zap
 
-z = Zap(experiment_name='my_experiment', env_location='.env')
+z = Zap()
 
 if __name__ == '__main__':
-    z.fit()
-    z.test()
-    preds = z.predict()
+    z.fit()              # training and validation
+    z.test()             # testing using the best checkpoint
 ```
 
-#### Running
-
-**First make sure you're running the Cloud SQL Proxy!**
-
-We can call our `main.py` script and give it our `config.yaml` from the command line as follows:
+Now we can call with file with an additional argument that specifies our config file:
 
 ```
 python main.py -c config.yaml
 ```
 
-## Viewing Results
+### Saving checkpoints
 
-The results of your experiment will be logged in a central database and any checkpoints (and other artifacts) will be saved in a central bucket. We don't have a server running the MLFlow app at the moment but you can easily run it locally whilst still connected to the central repositories.
+Zap will automatically save the checkpoints of each epoch in a folder called `mlruns` that will appear when you first kick off a training job.
 
-**First make sure you're running the Cloud SQL Proxy!**
+It will only save the **best** checkpoint, which is determined by having the **lowest validation loss**.
 
-Then replace the environment variables with their actual values and run:
+> ℹ️ Currently the MLFlow logger creates a numbered folder inside `mlruns` for each experiment; inside the numbered folder it creates another folder for the current run, named with a long GUID. Not sure why it uses numbers and GUIDs instead of the experiment name and the human-friendly run IDs it displays in the UI.
+
+> ⚠️ Currently checkpoints are only uploaded to a bucket if the training run finishes "naturally", i.e. if the early stopping kicks. If you cancel a run or if the trainer reaches the maximum number of epochs (100), the checkpoints are only stored locally
+
+### Testing separately
+
+If you run `z.fit()` and `z.test()` in the same run, the test command will automatically reference the best checkpoint (currently Zap determines "best" as the weights that resulted in the lowest validation loss). However, if you run `z.test()` separately, you will need to specify the checkpoint path:
+
+```python
+z.test(ckpt_path='mlruns/.../...')
+```
+
+## Viewing Experiment Results
+
+The results of your experiment will be logged in the database and any checkpoints (and other artifacts) will be saved locally (and remotely, if setup that way). You can start the server locally to browse the data from your runs:
+
+Replace the variables with their actual values and run:
 
 ```
 mlflow server \
-  --backend-store-uri postgresql://${ZAP_DB_USER}:${ZAP_DB_PWD}@${ZAP_DB_HOST}:${ZAP_DB_PORT}/${ZAP_DB_NAME}
-  --artifacts-destination gs://<ZAP_BUCKET>/<YOUR_EXPERIMENT>
+  --backend-store-uri ${ZAP_TRACKING_URI}
+  --artifacts-destination ${ZAP_ARTIFACT_LOCATION}
 ```
 
-## Overriding defaults
+You can set up MLFlow to [run on a VM](https://mlflow.org/docs/latest/tracking/server.html#secure-tracking-server) to make it accessible to others, though if you're working in production you'll likely want to setup [authentication](https://mlflow.org/docs/latest/auth/index.html?highlight=authentication).
 
-TODO
+## Inference
 
-## Zap development
+Once you've trained a model and want to use it for inference, you can do the following:
 
-TODO
+```python
+from zap import Zap
+
+z = Zap()
+
+if __name__ == '__main__':
+    predictions = z.predict(ckpt_path='path_to_your_ckpt')
+
+    for p in predictions:
+        pass  # do whatever you need to do
+```
+
+You still need to call your script with the config file:
+
+```
+python infer.py -c config.yaml
+```
