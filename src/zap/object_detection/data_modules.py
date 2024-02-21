@@ -10,6 +10,7 @@ from ..utils import parse_module_from_string
 from .dataset import ObjectDetectionDataset
 
 
+# TODO: make model agnostic: currently it's orientated around DETA
 class ObjectDetectionDataModule(ZapDataModule):
     def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
                  shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1, converter=None):
@@ -35,7 +36,8 @@ class ObjectDetectionDataModule(ZapDataModule):
         self.transforms = Compose(transforms) if transforms else None
 
         dataset = ObjectDetectionDataset(
-            img_folder=data_dir,
+            img_folder=Path(data_dir, 'images'),
+            ann_file=Path(data_dir, 'labels.json'),
             processor=self.processor)
 
         generator = Generator()

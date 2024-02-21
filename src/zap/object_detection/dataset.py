@@ -5,8 +5,7 @@ import torchvision
 
 
 class ObjectDetectionDataset(torchvision.datasets.CocoDetection):
-    def __init__(self, img_folder, processor):
-        ann_file = os.path.join(img_folder, "dataset.json")
+    def __init__(self, img_folder, ann_file, processor):
         super(ObjectDetectionDataset, self).__init__(img_folder, ann_file)
         self.processor = processor
 
