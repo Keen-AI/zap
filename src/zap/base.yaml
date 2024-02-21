@@ -10,10 +10,10 @@ trainer:
   logger:
     class_path: lightning.pytorch.loggers.MLFlowLogger
     init_args:
-      artifact_location: gs://${oc.env:ZAP_BUCKET}/${oc.env:ZAP_EXP_NAME}
-      tracking_uri: postgresql://${oc.env:ZAP_DB_USER}:${oc.env:ZAP_DB_PWD}@${oc.env:ZAP_DB_HOST}:${oc.env:ZAP_DB_PORT}/${oc.env:ZAP_DB_NAME}
+      artifact_location: ${oc.env:ZAP_ARTIFACT_LOCATION}
+      tracking_uri: ${oc.env:ZAP_TRACKING_URI}
       log_model: true
-      experiment_name: ${oc.env:ZAP_EXP_NAME}
+      experiment_name: ${oc.env:ZAP_EXPERIMENT_NAME}
   callbacks:
     - class_path: lightning.pytorch.callbacks.ModelCheckpoint
       init_args:
@@ -31,5 +31,5 @@ trainer:
     - class_path: lightning.pytorch.callbacks.StochasticWeightAveraging
       init_args:
         swa_lrs: 1e-2
-        device: null # will be infered automatically but "None" is required because "cpu" is the default
+        device: null # will be inferred automatically but "None" is required because "cpu" is the default
     - class_path: lightning.pytorch.callbacks.RichModelSummary
