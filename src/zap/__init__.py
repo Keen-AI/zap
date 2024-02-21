@@ -19,7 +19,7 @@ format_lightning_warnings_and_logs()
 
 class Zap():
     def __init__(self) -> None:
-        load_dotenv()
+        load_dotenv('.env')
 
         package_path = os.path.dirname(os.path.realpath(__file__))
         base_config_path = os.path.join(package_path, 'base.yaml')
