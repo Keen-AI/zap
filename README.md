@@ -11,9 +11,34 @@
 
 </div>
 
-## About
+## Why Zap?
 
-Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you to quickly train and test models for **classification**, **object detection** and **segmentation** without writing tonnes of boilerplate code.
+Pytorch Lightning already makes developing models with Pytorch easier, so why Zap?
+
+Zap is fundamentally an opinionated _template_ that builds on top of Lightning and integrates MLFlow to **log the results** of your experiments.
+
+It comes with pre-built models that allow you to develop your **classification**, **object detection** and **segmentation** tasks without writing tonnes of boilerplate code.
+
+Being such a light wrapper, it still allows you to develop custom models, the same way Lightning does.
+
+#### Things you get for free
+
+These are some of the options that Lightning makes available and we've included in the base config.
+
+| Feature                             | Status | Notes                                          |
+| ----------------------------------- | :----: | ---------------------------------------------- |
+| Pre-built models                    |   ✅   | See [Supported Models](#supported-models)      |
+| Automatic train/test/val splitting  |   ✅   | 70/20/10 (Configurable)                        |
+| Automatic Logging                   |   ✅   | Using MLFlow and a database                    |
+| Mixed Precision                     |   ✅   | 16-bit mixed                                   |
+| Early Stopping                      |   ✅   | Stop training if no improvement after 5 epochs |
+| Stochastic Weight Averaging         |   ✅   | Works well with `SGD` and `Adam`               |
+| Batch Finder                        |   🚧   | Not robust enough yet                          |
+| Learning Rate Finder                |   🚧   | Not working with config-driven optimizers      |
+| Gradient Accumulation               |   🚧   | TODO                                           |
+| Inference Boilerplate               |   🚧   | TODO                                           |
+| Data/result Visualisation           |   🚧   | TODO                                           |
+| Detailed val/test metrics and plots |   🚧   | TODO                                           |
 
 #### Supported models
 
@@ -32,24 +57,6 @@ Zap is a lightweight wrapper around Pytorch Lightning and MLFlow. It allows you 
 | FasterRCNN  | Object Detection |   🚧   | -                 | -                                       |
 
 > **ℹ️ Coming soon:** dynamic loss functions
-
-#### Things you get for free
-
-These are some of the options that Lightning makes available and we've included in the base config.
-
-| Feature                             | Status | Notes                                          |
-| ----------------------------------- | :----: | ---------------------------------------------- |
-| Automatic train/test/val splitting  |   ✅   | 70/20/10 (Configurable)                        |
-| Automatic Logging                   |   ✅   | Using MLFlow and a database                    |
-| Mixed Precision                     |   ✅   | 16-bit mixed                                   |
-| Early Stopping                      |   ✅   | Stop training if no improvement after 5 epochs |
-| Stochastic Weight Averaging         |   ✅   | Works well with `SGD` and `Adam`               |
-| Batch Finder                        |   🚧   | Not robust enough yet                          |
-| Learning Rate Finder                |   🚧   | Not working with config-driven optimizers      |
-| Gradient Accumulation               |   🚧   | TODO                                           |
-| Inference Boilerplate               |   🚧   | TODO                                           |
-| Data/result Visualisation           |   🚧   | TODO                                           |
-| Detailed val/test metrics and plots |   🚧   | TODO                                           |
 
 ## How To Guide
 
@@ -172,3 +179,17 @@ You still need to call your script with the config file:
 ```
 python infer.py -c config.yaml
 ```
+
+## Development Roadmap
+
+There are number of features we want to add to Zap before the 1.0 release:
+
+- tests!
+- more pre-built models
+- pre-built and custom loss functions
+- augmentation support across all models
+- more of the optimizations from Pytorch Lightning
+- built-in visualisation (during training and inference)
+- built-in metrics and plots for easier model evaluation
+- DVC integration for better tracking of datasets
+- stability and bug fixes
