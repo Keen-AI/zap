@@ -47,7 +47,7 @@ These are some of the options that Lightning makes available and we've included 
 | ResNet34    | Classification   |   ✅   | CrossEntropyLoss  | `zap.classification.models.ResNet34`    |
 | UNet        | Segmentation     |   ✅   | BCEWithLogitsLoss | `zap.segmentation.models.UNet`          |
 | DeepLabV3+  | Segmentation     |   ✅   | BCEWithLogitsLoss | `zap.segmentation.models.DeepLabV3Plus` |
-| DETA        | Object Detection |   ✅   | Combination       | `zap.object_detection.models.DETA`      |
+| DETA        | Object Detection |   ✅   | Combination       | `zap.object_detection.models.Deta`      |
 | ResNet50    | Classification   |   🚧   | -                 | -                                       |
 | ResNet152   | Classification   |   🚧   | -                 | -                                       |
 | DenseNet121 | Classification   |   🚧   | -                 | -                                       |
@@ -160,6 +160,19 @@ You can set up MLFlow to [run on a VM](https://mlflow.org/docs/latest/tracking/s
 
 ## Inference
 
+Zap expects to find your images for inference like so:
+
+```
+your_project/
+├── data/
+│   └── predict/
+│       └── images/
+│           ├── image_999.jpg
+│           └── ...
+├── infer.py
+└── config.yaml
+```
+
 Once you've trained a model and want to use it for inference, you can do the following:
 
 ```python
@@ -182,7 +195,7 @@ python infer.py -c config.yaml
 
 ## Development Roadmap
 
-There are number of features we want to add to Zap before the 1.0 release:
+There are number of features we want to add to Zap before the 1.0 release. In no particular order:
 
 - tests!
 - more pre-built models
@@ -192,4 +205,5 @@ There are number of features we want to add to Zap before the 1.0 release:
 - built-in visualisation (during training and inference)
 - built-in metrics and plots for easier model evaluation
 - DVC integration for better tracking of datasets
+- better docs
 - stability and bug fixes
