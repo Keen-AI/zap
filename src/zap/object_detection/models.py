@@ -1,4 +1,4 @@
-# TODO: add reference to source/author
+# Adapted from: https://github.com/NielsRogge/Transformers-Tutorials/tree/master/DETA
 
 import lightning.pytorch as pl
 import torch

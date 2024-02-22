@@ -1,3 +1,5 @@
+# Adapted from: https://github.com/NielsRogge/Transformers-Tutorials/tree/master/DETA
+
 from pathlib import Path
 
 from torch import Generator

@@ -1,5 +1,5 @@
 
-import os
+# Adapted from: https://github.com/NielsRogge/Transformers-Tutorials/tree/master/DETA
 
 import torchvision
 
