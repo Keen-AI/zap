@@ -4,12 +4,13 @@ build-backend = "hatchling.build"
 
 [project]
 name = "zap"
-version = "0.0.3-alpha"
+version = "0.0.4-alpha"
 authors = [{ name="Petar Gyurov", email="petar.gyurov@keen-ai.com" }]
 description = "Simple AI Pipeline"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  "accelerate",
   "colorama",
   "google-cloud-storage",
   "jsonargparse[signatures]",
@@ -20,7 +21,9 @@ dependencies = [
   "psycopg2-binary",
   "pycocotools",
   "python-dotenv",
+  "segmentation_models_pytorch",
   "torchvision",
+  "transformers",
   "virtualenv"  # required for mlflow
 ]
 classifiers = [

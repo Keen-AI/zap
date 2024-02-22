@@ -19,13 +19,11 @@ class ClassificationDataset(Dataset):
     def __getitem__(self, index: int) -> Tuple[Any, Any]:
         img = self.images[index]
         img = Image.open(img)
-        # img = Image.fromarray(img.numpy(), mode="L")
-        
+
         label = self.labels.loc[self.images[index].name, 'label']
         label = self.label_map[label]
-        
+
         if self.transform is not None:
             img = self.transform(img)
-        
+
         return img, label
-    
