@@ -9,13 +9,13 @@ import torchvision.models as models
 
 # TODO: can we make this dynamic in terms of which ResNet is used like we did in kai-classification?
 class ResNet34(pl.LightningModule):
-    def __init__(self, num_classes, bias, loss_fn):
+    def __init__(self, num_classes, bias):
         super().__init__()
 
         self.model = models.resnet.resnet34(weights="DEFAULT")
         self.model.fc = torch.nn.Linear(in_features=512, out_features=num_classes, bias=bias)
 
-        self.loss_fn = loss_fn or torch.nn.CrossEntropyLoss()
+        self.loss_fn = torch.nn.CrossEntropyLoss()
         self.save_hyperparameters()
 
     def forward(self, x):

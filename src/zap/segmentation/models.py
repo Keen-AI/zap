@@ -50,7 +50,7 @@ class DeepLabV3Plus(pl.LightningModule):
 
 class UNet(pl.LightningModule):
     def __init__(self, num_classes, encoder_name, encoder_depth,
-                 encoder_weights, activation, loss_fn):
+                 encoder_weights, activation):
         super().__init__()
 
         self.model = smp.Unet(encoder_name=encoder_name,
