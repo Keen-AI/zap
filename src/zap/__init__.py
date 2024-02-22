@@ -18,9 +18,8 @@ format_lightning_warnings_and_logs()
 
 
 class Zap():
-    def __init__(self, experiment_name, env_location) -> None:
-        load_dotenv(env_location)
-        os.environ['ZAP_EXP_NAME'] = experiment_name
+    def __init__(self) -> None:
+        load_dotenv('.env')
 
         package_path = os.path.dirname(os.path.realpath(__file__))
         base_config_path = os.path.join(package_path, 'base.yaml')
@@ -68,22 +67,22 @@ class ZapDataModule(LightningDataModule):
     def train_dataloader(self):
         return DataLoader(self.train_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=self.shuffle)
+                          shuffle=self.shuffle, collate_fn=self.collate_fn)
 
     def val_dataloader(self):
         return DataLoader(self.val_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=False, collate_fn=self.collate_fn)
 
     def test_dataloader(self):
         return DataLoader(self.test_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=False, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False)
+                          shuffle=False, collate_fn=self.collate_fn)
 
 
 class InferenceDataset(Dataset):

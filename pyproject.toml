@@ -10,6 +10,7 @@ description = "Simple AI Pipeline"
 readme = "README.md"
 requires-python = ">=3.9"
 dependencies = [
+  "accelerate",
   "colorama",
   "google-cloud-storage",
   "jsonargparse[signatures]",
@@ -22,6 +23,7 @@ dependencies = [
   "python-dotenv",
   "segmentation_models_pytorch",
   "torchvision",
+  "transformers",
   "virtualenv"  # required for mlflow
 ]
 classifiers = [
