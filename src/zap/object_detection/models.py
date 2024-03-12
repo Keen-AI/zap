@@ -71,7 +71,7 @@ class Deta(pl.LightningModule):
         except AssertionError:  # TODO: handle this properly
             print("Assertion Error!")
             print(pixel_values)
-            return {}, {}
+            return {}, {}, {}, {}
 
         loss = outputs.loss
         loss_dict = outputs.loss_dict
