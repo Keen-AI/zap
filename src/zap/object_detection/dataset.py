@@ -36,6 +36,7 @@ class ObjectDetectionDataset(torchvision.datasets.CocoDetection):
         # read in PIL image and target in COCO format
         # feel free to add data augmentation here before passing them to the next step
         img, target = super(ObjectDetectionDataset, self).__getitem__(idx)
+        file_name = self.coco.loadImgs(idx)[0]["file_name"]
 
         # preprocess image and target (converting target to DETR format, resizing
         # + normalization of both image and target)
@@ -45,4 +46,4 @@ class ObjectDetectionDataset(torchvision.datasets.CocoDetection):
         pixel_values = encoding["pixel_values"].squeeze()  # remove batch dimension
         target = encoding["labels"][0]  # remove batch dimension
 
-        return pixel_values, target
+        return pixel_values, target, file_name
