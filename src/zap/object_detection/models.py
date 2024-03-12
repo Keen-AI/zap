@@ -69,8 +69,7 @@ class Deta(pl.LightningModule):
         try:
             outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask, labels=labels)
         except AssertionError:  # TODO: handle this properly
-            print("Assertion Error!")
-            print(pixel_values)
+            print(f"Assertion Error at {batch['file_names']}")
             return {}, {}, {}, {}
 
         loss = outputs.loss
@@ -80,6 +79,9 @@ class Deta(pl.LightningModule):
 
     def training_step(self, batch, batch_idx):
         loss, loss_dict, _, _ = self.common_step(batch, batch_idx)
+        if not loss:
+            return None
+
         self.log("train_loss", loss)
         for k, v in loss_dict.items():
             self.log("train_" + k, v.item())
@@ -87,6 +89,9 @@ class Deta(pl.LightningModule):
 
     def validation_step(self, batch, batch_idx):
         loss, loss_dict, _, _ = self.common_step(batch, batch_idx)
+        if not loss:
+            return None
+
         self.log("val_loss", loss)
         for k, v in loss_dict.items():
             self.log("validation_" + k, v.item())
@@ -95,6 +100,8 @@ class Deta(pl.LightningModule):
 
     def test_step(self, batch, batch_idx):
         loss, loss_dict, labels, outputs = self.common_step(batch, batch_idx)
+        if not loss:
+            return None
 
         H, W = labels[0]['orig_size'].tolist()
         labels[0]['labels'] = labels[0].pop('class_labels')
