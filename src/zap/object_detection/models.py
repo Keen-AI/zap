@@ -54,7 +54,7 @@ class Deta(pl.LightningModule):
         self.save_hyperparameters()
 
         # metrics
-        self.precision = MeanAveragePrecision(class_metrics=False)
+        self.precision = MeanAveragePrecision(class_metrics=True)
 
     def forward(self, pixel_values, pixel_mask=None):
         outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
@@ -126,10 +126,16 @@ class Deta(pl.LightningModule):
                                                                target_sizes=[(H, W)],
                                                                threshold=0)
 
-        # calc and log precision
+        # calculate and log precision
         precision = self.precision(results, labels)
         for k, v in precision.items():
-            self.log(k, v.item(), on_epoch=True)
+            # handle single class vs multiclass
+            class_values = v.tolist()
+            if not isinstance(class_values, list):
+                self.log(k, class_values, on_epoch=True)
+            else:
+                for class_index, val in enumerate(class_values):
+                    self.log(f'class_{class_index}_{k}', val, on_epoch=True)
 
         self.log("test_loss", loss)
         for k, v in loss_dict.items():
