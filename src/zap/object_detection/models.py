@@ -129,6 +129,8 @@ class Deta(pl.LightningModule):
         # calculate and log precision
         precision = self.precision(results, labels)
         for k, v in precision.items():
+            if k == 'classes':  # don't record the classes key; not useful
+                continue
             # handle single class vs multiclass
             class_values = v.tolist()
             if not isinstance(class_values, list):
