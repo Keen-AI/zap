@@ -132,10 +132,12 @@ class Deta(pl.LightningModule):
             # handle single class vs multiclass
             class_values = v.tolist()
             if not isinstance(class_values, list):
-                self.log(k, class_values, on_epoch=True)
+                if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
+                    self.log(k, class_values, on_epoch=True)
             else:
                 for class_index, val in enumerate(class_values):
-                    self.log(f'class_{class_index}_{k}', val, on_epoch=True)
+                    if val >= 0:
+                        self.log(f'{k}_{class_index}', val, on_epoch=True)
 
         self.log("test_loss", loss)
         for k, v in loss_dict.items():
