@@ -1,10 +1,12 @@
-import numpy as np
 import json
-import pandas as pd
 import os
 
+import numpy as np
+import pandas as pd
+
+
 def csv_to_coco(data_dir):
-    """Convert csv data format of column_names =['filename','class','width', 'height','xmin','ymin','xmax','ymax'] into coco json
+    """Convert csv data format of column_names =['filename','label','width', 'height','xmin','ymin','xmax','ymax'] into coco json
 
     Args:
         csv_path (str): path to csv
@@ -21,15 +23,9 @@ def csv_to_coco(data_dir):
     categories = []
     annotations = []
 
-    category = {}
-    category["supercategory"] = 'none'
-    category["id"] = 0
-    category["name"] = 'None'
-    categories.append(category)
-
     data['fileid'] = data['filename'].astype('category').cat.codes
-    data['categoryid'] = pd.Categorical(data['class'], ordered=True).codes
-    data['categoryid'] = data['categoryid']+1
+    data['categoryid'] = pd.Categorical(data['label'], ordered=True).codes
+    data['categoryid'] = data['categoryid'] + 1
     data['annid'] = data.index
 
     def image(row):
@@ -44,12 +40,12 @@ def csv_to_coco(data_dir):
         category = {}
         category["supercategory"] = 'None'
         category["id"] = row.categoryid
-        category["name"] = row[2]
+        category["name"] = row.label.lower()
         return category
 
     def annotation(row):
         annotation = {}
-        area = (row.xmax - row.xmin)*(row.ymax - row.ymin)
+        area = (row.xmax - row.xmin) * (row.ymax - row.ymin)
         annotation["segmentation"] = []
         annotation["iscrowd"] = 0
         annotation["area"] = area
