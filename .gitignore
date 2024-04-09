@@ -4,6 +4,7 @@ dist/
 data/
 lightning_logs/
 mlruns/
+configs/
 
 *.DS_Store
 *.python-version
