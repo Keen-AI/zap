@@ -82,7 +82,7 @@ class ZapDataModule(LightningDataModule):
     def predict_dataloader(self):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False, collate_fn=self.collate_fn)
+                          shuffle=False, collate_fn=None)
 
 
 class InferenceDataset(Dataset):

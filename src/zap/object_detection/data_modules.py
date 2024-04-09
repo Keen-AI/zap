@@ -67,7 +67,7 @@ class ObjectDetectionDataModule(ZapDataModule):
             ann_file=Path(data_dir, 'labels.json'),
             processor=self.processor)
 
-        generator = Generator()
+        generator = Generator().manual_seed(42)
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
@@ -79,11 +79,13 @@ class ObjectDetectionDataModule(ZapDataModule):
         self.save_hyperparameters()
 
     def collate_fn(self, batch):
+        file_names = [item[2] for item in batch]
         pixel_values = [item[0] for item in batch]
         encoding = self.processor.pad(pixel_values, return_tensors="pt")
         labels = [item[1] for item in batch]
 
         batch = {}
+        batch['file_names'] = file_names
         batch['pixel_values'] = encoding['pixel_values']
         batch['pixel_mask'] = encoding['pixel_mask']
         batch['labels'] = labels
