@@ -29,16 +29,17 @@ from pathlib import Path
 
 from torch import Generator
 from torch.utils.data import random_split
+from torchvision.models.detection import FasterRCNN_ResNet50_FPN_V2_Weights
 from torchvision.transforms import Compose
 from transformers import DetaImageProcessor
 
 from .. import InferenceDataset, ZapDataModule
 from ..utils import parse_module_from_string
-from .dataset import ObjectDetectionDataset
+from .dataset import DETADataset, FasterRCNNDataset
 
 
 # TODO: make model agnostic: currently it's orientated around DETA
-class ObjectDetectionDataModule(ZapDataModule):
+class DETADataModule(ZapDataModule):
     def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
                  shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1, converter=None):
         super().__init__()
@@ -62,7 +63,7 @@ class ObjectDetectionDataModule(ZapDataModule):
         #  Currently only used/required for inference
         self.transforms = Compose(transforms) if transforms else None
 
-        dataset = ObjectDetectionDataset(
+        dataset = DETADataset(
             img_folder=Path(data_dir, 'images'),
             ann_file=Path(data_dir, 'labels.json'),
             processor=self.processor)
@@ -91,3 +92,41 @@ class ObjectDetectionDataModule(ZapDataModule):
         batch['labels'] = labels
 
         return batch
+
+
+class FasterRCNNDataModule(ZapDataModule):
+    def __init__(self, data_dir, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
+                 shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1, collate_fn=None):
+        super().__init__()
+
+        self.batch_size = batch_size
+        self.num_workers = num_workers
+        self.pin_memory = pin_memory
+        self.shuffle = shuffle
+        # self.collate_fn = collate_fn  # TODO: set this as None on ZapDataModule by default
+
+        self.preprocess = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT.transforms()
+        self.transforms = self.preprocess  # Compose(transforms) if transforms else None
+
+        # print(self.preprocess)
+        # print(self.transforms)
+
+        dataset = FasterRCNNDataset(
+            img_folder=Path(data_dir, 'images'),
+            ann_file=Path(data_dir, 'labels.json'),
+            transforms=self.transforms)
+
+        generator = Generator().manual_seed(42)
+        self.train_dataset, self.test_dataset, self.val_dataset = random_split(
+            dataset, [train_split, test_split, val_split], generator)
+
+        self.predict_dir = Path(data_dir, 'predict', 'images')
+        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
+        # TODO: rename transforms to be consistent
+        self.predict_dataset = InferenceDataset(prediction_images, transform=self.transforms)
+
+        self.save_hyperparameters()
+
+    def collate_fn(self, batch):
+        """return tuple data"""
+        return tuple(zip(*batch))
