@@ -189,10 +189,16 @@ class FasterRCNN(pl.LightningModule):
         preds = self.model(x)
         return preds
 
-    def training_step(self, batch, batch_idx):
-        images, targets = batch
+    def common_step(self, batch):
+        images, targets, filenames = batch
         images = list(images)
         targets = list(targets)
+        filenames = list(filenames)
+
+        return images, targets, filenames
+
+    def training_step(self, batch, batch_idx):
+        images, targets, _ = self.common_step(batch)
 
         loss_dict = self.model(images, targets)
         for k, v in loss_dict.items():
@@ -203,9 +209,7 @@ class FasterRCNN(pl.LightningModule):
         return loss
 
     def validation_step(self, batch, batch_idx):
-        images, targets = batch
-        images = list(images)
-        targets = list(targets)
+        images, targets, _ = self.common_step(batch)
 
         loss_dict = self.model(images, targets)
         for k, v in loss_dict.items():
@@ -216,9 +220,7 @@ class FasterRCNN(pl.LightningModule):
         return loss
 
     def test_step(self, batch, batch_idx):
-        images, targets = batch
-        images = list(images)
-        targets = list(targets)
+        images, targets, _ = self.common_step(batch)
 
         loss_dict = self.model(images, targets)
         for k, v in loss_dict.items():

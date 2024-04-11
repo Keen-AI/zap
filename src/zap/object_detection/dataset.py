@@ -120,4 +120,4 @@ class FasterRCNNDataset(Dataset):
             image = self.transforms(image)
             # target = self.transforms(target)
 
-        return image, target
+        return image, target, image_path
