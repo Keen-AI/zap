@@ -38,7 +38,6 @@ from ..utils import parse_module_from_string
 from .dataset import DETADataset, FasterRCNNDataset
 
 
-# TODO: make model agnostic: currently it's orientated around DETA
 class DETADataModule(ZapDataModule):
     def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
                  shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1, converter=None):
@@ -96,20 +95,16 @@ class DETADataModule(ZapDataModule):
 
 class FasterRCNNDataModule(ZapDataModule):
     def __init__(self, data_dir, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
-                 shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1, collate_fn=None):
+                 shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1):
         super().__init__()
 
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
         self.shuffle = shuffle
-        # self.collate_fn = collate_fn  # TODO: set this as None on ZapDataModule by default
 
-        self.preprocess = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT.transforms()
-        self.transforms = self.preprocess  # Compose(transforms) if transforms else None
-
-        # print(self.preprocess)
-        # print(self.transforms)
+        # TODO: need to incorporate user given transforms
+        self.transforms = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT.transforms()
 
         dataset = FasterRCNNDataset(
             img_folder=Path(data_dir, 'images'),
