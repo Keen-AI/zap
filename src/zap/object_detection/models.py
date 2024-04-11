@@ -24,21 +24,16 @@ OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 """
 
-from pprint import pprint
 
 import lightning.pytorch as pl
 import torch
 from torch import tensor
 from torchmetrics.detection import MeanAveragePrecision
-from torchvision.models.detection import (
-    FasterRCNN_MobileNet_V3_Large_FPN_Weights,
-    fasterrcnn_mobilenet_v3_large_fpn)
+from torchvision.models.detection import (FasterRCNN_ResNet50_FPN_V2_Weights,
+                                          fasterrcnn_resnet50_fpn_v2)
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from transformers import DetaForObjectDetection, DetaImageProcessor
 from transformers.image_transforms import center_to_corners_format
-
-# from torchvision.models.detection import (FasterRCNN_ResNet50_FPN_V2_Weights,
-#                                           fasterrcnn_resnet50_fpn_v2)
 
 
 class Deta(pl.LightningModule):
@@ -173,23 +168,11 @@ class FasterRCNN(pl.LightningModule):
     def __init__(self, num_classes):
         super().__init__()
 
-        # TODO: confirm if this will use pre-trained weights by default
-        self.model = fasterrcnn_mobilenet_v3_large_fpn(weights=FasterRCNN_MobileNet_V3_Large_FPN_Weights.DEFAULT)
+        self.model = fasterrcnn_resnet50_fpn_v2(weights=FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
 
         # Replace the pre-trained head with a new head
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
-
-        # self.model.roi_heads.box_predictor.cls_score = torch.nn.Linear(
-        #     in_features=self.model.roi_heads.box_predictor.cls_score.in_features,
-        #     out_features=num_classes,
-        #     bias=True,
-        # )
-        # self.model.roi_heads.box_predictor.bbox_pred = torch.nn.Linear(
-        #     in_features=self.model.roi_heads.box_predictor.bbox_pred.in_features,
-        #     out_features=num_classes * 4,
-        #     bias=True,
-        # )
 
         self.save_hyperparameters()
 
@@ -205,45 +188,6 @@ class FasterRCNN(pl.LightningModule):
     def forward(self, x):
         preds = self.model(x)
         return preds
-
-    def training_step(self, batch, batch_idx):
-        images, targets = batch
-        images = list(images)
-        targets = list(targets)
-
-        loss_dict = self.model(images, targets)
-        for k, v in loss_dict.items():
-            self.log("train_" + k, v.item(), on_epoch=True)
-
-        loss = sum(loss for loss in loss_dict.values())
-        self.log('train_loss', loss, on_epoch=True, prog_bar=True)
-        return loss
-
-    def validation_step(self, batch, batch_idx):
-        images, targets = batch
-        images = list(images)
-        targets = list(targets)
-
-        loss_dict = self.model(images, targets)
-        for k, v in loss_dict.items():
-            self.log("val_" + k, v.item(), on_epoch=True)
-
-        loss = sum(loss for loss in loss_dict.values())
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True)
-        return loss
-
-    def test_step(self, batch, batch_idx):
-        images, targets = batch
-        images = list(images)
-        targets = list(targets)
-
-        loss_dict = self.model(images, targets)
-        for k, v in loss_dict.items():
-            self.log("test_" + k, v.item(), on_epoch=True)
-
-        loss = sum(loss for loss in loss_dict.values())
-        self.log('test_loss', loss, on_epoch=True, prog_bar=True)
-        return loss
 
     def training_step(self, batch, batch_idx):
         images, targets = batch
