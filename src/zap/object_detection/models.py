@@ -238,7 +238,7 @@ class FasterRCNN(pl.LightningModule):
             else:
                 for class_index, val in enumerate(class_values):
                     if val >= 0:
-                        k = k.replace('_per_class', '')
+                        k = k.replace('_per_class', '_class')
                         self.log(f'{k}_{self.label_map[class_index]}', val, on_epoch=True)
 
         return precision
