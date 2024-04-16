@@ -69,6 +69,12 @@ class FasterRCNNDataset(Dataset):
         with open(str(ann_file)) as file_obj:
             self.coco_data = json.load(file_obj)
 
+        # Create label map
+        categories = self.coco_data['categories']
+        self.label_map = {}
+        for category in categories:
+            self.label_map[int(category['id'])] = category['name']
+
         # put all of the annos into a dict where keys are image IDs to speed up retrieval
         self.image_id_to_annos = defaultdict(list)
         for anno in self.coco_data['annotations']:

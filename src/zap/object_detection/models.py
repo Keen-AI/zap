@@ -177,6 +177,9 @@ class FasterRCNN(pl.LightningModule):
         self.precision = MeanAveragePrecision(class_metrics=True)
         self.save_hyperparameters()
 
+    def on_train_epoch_start(self) -> None:
+        self.label_map = self.trainer.datamodule.label_map
+
     def on_validation_model_eval(self):
         self.trainer.model.train()  # leave model in training mode for validation step so we can get val losses
 
@@ -226,6 +229,11 @@ class FasterRCNN(pl.LightningModule):
         for k, v in precision.items():
             if k == 'classes':  # don't record the classes key; not useful
                 continue
+
+            # rename the per_class keys to contain the actual class name instead of the index
+            if 'map_per_class_' in k:
+                k = f'map_{self.label_map[int(k[-1])]}'
+
             # handle single class vs multiclass
             class_values = v.tolist()
             if not isinstance(class_values, list):

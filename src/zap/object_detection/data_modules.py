@@ -111,6 +111,8 @@ class FasterRCNNDataModule(ZapDataModule):
             ann_file=Path(data_dir, 'labels.json'),
             transforms=self.transforms)
 
+        self.label_map = dataset.label_map
+
         generator = Generator().manual_seed(42)
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
