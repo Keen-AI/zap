@@ -174,13 +174,11 @@ class FasterRCNN(pl.LightningModule):
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
+        self.precision = MeanAveragePrecision(class_metrics=True)
         self.save_hyperparameters()
 
     def on_validation_model_eval(self):
         self.trainer.model.train()  # leave model in training mode for validation step so we can get val losses
-
-    def on_test_model_eval(self):
-        self.trainer.model.train()  # leave model in training mode for test step so we can get test losses
 
     def configure_optimizers(self):
         return super().configure_optimizers()
@@ -222,10 +220,20 @@ class FasterRCNN(pl.LightningModule):
     def test_step(self, batch, batch_idx):
         images, targets, _ = self.common_step(batch)
 
-        loss_dict = self.model(images, targets)
-        for k, v in loss_dict.items():
-            self.log("test_" + k, v.item(), on_epoch=True)
+        results = self.model(images)
+        precision = self.precision(results, targets)
 
-        loss = sum(loss for loss in loss_dict.values())
-        self.log('test_loss', loss, on_epoch=True, prog_bar=True)
-        return loss
+        for k, v in precision.items():
+            if k == 'classes':  # don't record the classes key; not useful
+                continue
+            # handle single class vs multiclass
+            class_values = v.tolist()
+            if not isinstance(class_values, list):
+                if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
+                    self.log(k, class_values, on_epoch=True)
+            else:
+                for class_index, val in enumerate(class_values):
+                    if val >= 0:
+                        self.log(f'{k}_{class_index}', val, on_epoch=True)
+
+        return precision
