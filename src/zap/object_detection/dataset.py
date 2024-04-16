@@ -86,7 +86,7 @@ class FasterRCNNDataset(Dataset):
         # print('>>>', image_data['file_name'])
 
         image_path = self.img_folder / image_data['file_name']
-        image = Image.open(image_path)
+        image = Image.open(image_path).convert('RGB')
 
         annos = self.image_id_to_annos[image_id]
         anno_data = {
