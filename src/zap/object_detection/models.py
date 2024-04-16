@@ -28,15 +28,16 @@ SOFTWARE.
 import lightning.pytorch as pl
 import torch
 from torch import tensor
-from torchmetrics.detection import MeanAveragePrecision
 from torchvision.models.detection import (FasterRCNN_ResNet50_FPN_V2_Weights,
                                           fasterrcnn_resnet50_fpn_v2)
 from torchvision.models.detection.faster_rcnn import FastRCNNPredictor
 from transformers import DetaForObjectDetection, DetaImageProcessor
 from transformers.image_transforms import center_to_corners_format
 
+from .. import ZapModel
 
-class Deta(pl.LightningModule):
+
+class Deta(ZapModel):
     def __init__(self, lr, lr_backbone, weight_decay, num_classes):
         super().__init__()
         # replace COCO classification head with custom head
@@ -55,9 +56,6 @@ class Deta(pl.LightningModule):
         self.lr = lr
         self.lr_backbone = lr_backbone
         self.weight_decay = weight_decay
-
-        # metrics
-        self.precision = MeanAveragePrecision(class_metrics=True)
 
         self.save_hyperparameters()
 
@@ -132,18 +130,7 @@ class Deta(pl.LightningModule):
 
         # calculate and log precision
         precision = self.precision(results, labels)
-        for k, v in precision.items():
-            if k == 'classes':  # don't record the classes key; not useful
-                continue
-            # handle single class vs multiclass
-            class_values = v.tolist()
-            if not isinstance(class_values, list):
-                if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
-                    self.log(k, class_values, on_epoch=True)
-            else:
-                for class_index, val in enumerate(class_values):
-                    if val >= 0:
-                        self.log(f'{k}_{class_index}', val, on_epoch=True)
+        self.log_precision(precision)
 
         self.log("test_loss", loss)
         for k, v in loss_dict.items():
@@ -164,7 +151,7 @@ class Deta(pl.LightningModule):
         return optimizer
 
 
-class FasterRCNN(pl.LightningModule):
+class FasterRCNN(ZapModel):
     def __init__(self, num_classes):
         super().__init__()
 
@@ -174,11 +161,7 @@ class FasterRCNN(pl.LightningModule):
         in_features = self.model.roi_heads.box_predictor.cls_score.in_features
         self.model.roi_heads.box_predictor = FastRCNNPredictor(in_features, num_classes)
 
-        self.precision = MeanAveragePrecision(class_metrics=True)
         self.save_hyperparameters()
-
-    def on_test_epoch_start(self) -> None:
-        self.label_map = self.trainer.datamodule.label_map
 
     def on_validation_model_eval(self):
         self.trainer.model.train()  # leave model in training mode for validation step so we can get val losses
@@ -226,19 +209,6 @@ class FasterRCNN(pl.LightningModule):
         results = self.model(images)
         precision = self.precision(results, targets)
 
-        for k, v in precision.items():
-            if k == 'classes':  # don't record the classes key; not useful
-                continue
-
-            # handle single class vs multiclass
-            class_values = v.tolist()
-            if not isinstance(class_values, list):
-                if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
-                    self.log(k, class_values, on_epoch=True)
-            else:
-                for class_index, val in enumerate(class_values):
-                    if val >= 0:
-                        k = k.replace('_per_class', '_class')
-                        self.log(f'{k}_{self.label_map[class_index]}', val, on_epoch=True)
+        self.log_precision(precision)
 
         return precision
