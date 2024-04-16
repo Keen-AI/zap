@@ -177,7 +177,7 @@ class FasterRCNN(pl.LightningModule):
         self.precision = MeanAveragePrecision(class_metrics=True)
         self.save_hyperparameters()
 
-    def on_train_epoch_start(self) -> None:
+    def on_test_epoch_start(self) -> None:
         self.label_map = self.trainer.datamodule.label_map
 
     def on_validation_model_eval(self):
