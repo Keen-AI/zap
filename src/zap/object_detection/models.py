@@ -230,10 +230,6 @@ class FasterRCNN(pl.LightningModule):
             if k == 'classes':  # don't record the classes key; not useful
                 continue
 
-            # rename the per_class keys to contain the actual class name instead of the index
-            if 'map_per_class_' in k:
-                k = f'map_{self.label_map[int(k[-1])]}'
-
             # handle single class vs multiclass
             class_values = v.tolist()
             if not isinstance(class_values, list):
@@ -242,6 +238,6 @@ class FasterRCNN(pl.LightningModule):
             else:
                 for class_index, val in enumerate(class_values):
                     if val >= 0:
-                        self.log(f'{k}_{class_index}', val, on_epoch=True)
+                        self.log(f'{k}_{self.label_map[class_index]}', val, on_epoch=True)
 
         return precision
