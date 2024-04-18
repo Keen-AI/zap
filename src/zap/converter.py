@@ -1,16 +1,17 @@
 import json
 import os
 
-import numpy as np
 import pandas as pd
 
 
 def csv_to_coco(data_dir):
-    """Convert csv data format of column_names =['filename','label','width', 'height','xmin','ymin','xmax','ymax'] into coco json
+    """
+    Convert CSV data with column names:
+        ['filename','label','width', 'height','xmin','ymin','xmax','ymax']
+    into COCO JSON format.
 
     Args:
-        csv_path (str): path to csv
-        save_json_path (str): path to json
+        data_dir (str): path where input CSV is and where output JSON will be saved
 
     """
 
@@ -25,7 +26,7 @@ def csv_to_coco(data_dir):
 
     data['fileid'] = data['filename'].astype('category').cat.codes
     data['categoryid'] = pd.Categorical(data['label'], ordered=True).codes
-    data['categoryid'] = data['categoryid'] + 1
+    data['categoryid'] = data['categoryid']
     data['annid'] = data.index
 
     def image(row):
