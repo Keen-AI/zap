@@ -211,6 +211,9 @@ class FasterRCNN(ZapModel):
         results = self.model(images)
         precision = self.precision(results, targets)
 
-        self.log_precision(precision)
+        for k, v in precision.items():
+            self.log(k, v, on_epoch=True, batch_idx=batch_idx)
+
+        # self.log_precision(precision)
 
         return precision
