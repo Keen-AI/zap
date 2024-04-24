@@ -25,7 +25,6 @@ SOFTWARE.
 """
 
 
-import lightning.pytorch as pl
 import torch
 from torch import tensor
 from torchvision.models.detection import (FasterRCNN_ResNet50_FPN_V2_Weights,
@@ -169,9 +168,12 @@ class FasterRCNN(ZapModel):
     def configure_optimizers(self):
         return super().configure_optimizers()
 
-    def forward(self, x):
-        preds = self.model(x)
-        return preds
+    def forward(self, batch):
+        input_data = batch[0]
+        filenames = batch[1]
+
+        preds = self.model(input_data)
+        return tuple(zip(preds, filenames))
 
     def common_step(self, batch):
         images, targets, filenames = batch

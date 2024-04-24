@@ -109,7 +109,7 @@ class ZapDataModule(LightningDataModule):
     def predict_dataloader(self):
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False, collate_fn=None)
+                          shuffle=False, collate_fn=self.collate_fn)
 
 
 class InferenceDataset(Dataset):
@@ -126,5 +126,5 @@ class InferenceDataset(Dataset):
 
         if self.transform is not None:
             img = self.transform(img)
-
-        return img
+        # TODO: test compatibility with all models
+        return img, self.images[index]
