@@ -25,11 +25,8 @@ SOFTWARE.
 """
 
 import json
-import os
 from collections import defaultdict
-from pathlib import Path
 
-import cv2
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
@@ -88,9 +85,6 @@ class FasterRCNNDataset(Dataset):
         image_data = self.coco_data['images'][index]
         image_id = image_data['id']
 
-        # print('>>>', self.img_folder)
-        # print('>>>', image_data['file_name'])
-
         image_path = self.img_folder / image_data['file_name']
         image = Image.open(image_path).convert('RGB')
 
@@ -124,6 +118,5 @@ class FasterRCNNDataset(Dataset):
 
         if self.transforms is not None:
             image = self.transforms(image)
-            # target = self.transforms(target)
 
         return image, target, image_path
