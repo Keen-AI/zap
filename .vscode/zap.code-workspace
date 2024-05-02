@@ -15,17 +15,10 @@
 			"**/.python-version": true
 		},
 		// formatting
-		"python.formatting.provider": "autopep8",
-		"python.formatting.autopep8Path": "autopep8",
 		"editor.formatOnSave": true,
 		"editor.codeActionsOnSave": {
-			"source.organizeImports": true,
+			"source.organizeImports": "always",
 		},
-		// linting
-		"python.linting.enabled": true,
-		"python.linting.lintOnSave": true,
-		"python.linting.pylintEnabled": false,
-		"python.linting.flake8Enabled": true,
 		// customisation
 		"workbench.colorCustomizations": {
 			"activityBar.background": "#2d114c",
