@@ -54,12 +54,16 @@ class Zap():
 class ZapModel(LightningModule):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.precision = MeanAveragePrecision(class_metrics=True)
+        self.mAP = MeanAveragePrecision(class_metrics=True)
 
     def on_test_epoch_start(self) -> None:
         self.label_map = self.trainer.datamodule.label_map
 
-    def log_precision(self, precision, batch_size):
+    def on_test_end(self) -> None:
+        mAP = self.mAP.compute()
+        self.log_precision(mAP)
+
+    def log_precision(self, precision):
         for k, v in precision.items():
             if k == 'classes':  # don't record the classes key; not useful
                 continue
@@ -68,12 +72,14 @@ class ZapModel(LightningModule):
             class_values = v.tolist()
             if not isinstance(class_values, list):
                 # if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
-                self.log(k, class_values, on_epoch=True, batch_size=batch_size)
+                self.logger.experiment.log_metric(self.logger.run_id, k, class_values)
             else:
                 for class_index, val in enumerate(class_values):  # log each class metric separately
                     # if val >= 0:
                     k = k.replace('_per_class', '_class')
-                    self.log(f'{k}_{self.label_map[class_index]}', val, on_epoch=True, batch_size=batch_size)
+                    self.logger.experiment.log_metric(self.logger.run_id,
+                                                      f'{k}_{self.label_map[class_index]}',
+                                                      val)
 
 
 class ZapDataModule(LightningDataModule):

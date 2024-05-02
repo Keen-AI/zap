@@ -58,6 +58,18 @@ class Deta(ZapModel):
 
         self.save_hyperparameters()
 
+    def configure_optimizers(self):
+        param_dicts = [
+            {"params": [p for n, p in self.named_parameters() if "backbone" not in n and p.requires_grad]},
+            {
+                "params": [p for n, p in self.named_parameters() if "backbone" in n and p.requires_grad],
+                "lr": self.lr_backbone,
+            },
+        ]
+        optimizer = torch.optim.AdamW(param_dicts, lr=self.lr,
+                                      weight_decay=self.weight_decay)
+        return optimizer
+
     def forward(self, pixel_values, pixel_mask=None):
         outputs = self.model(pixel_values=pixel_values, pixel_mask=pixel_mask)
 
@@ -127,27 +139,7 @@ class Deta(ZapModel):
                                                                target_sizes=[(H, W)],
                                                                threshold=0)
 
-        # calculate and log precision
-        precision = self.precision(results, labels)
-        self.log_precision(precision)
-
-        self.log("test_loss", loss)
-        for k, v in loss_dict.items():
-            self.log("test_" + k, v.item())
-
-        return loss
-
-    def configure_optimizers(self):
-        param_dicts = [
-            {"params": [p for n, p in self.named_parameters() if "backbone" not in n and p.requires_grad]},
-            {
-                "params": [p for n, p in self.named_parameters() if "backbone" in n and p.requires_grad],
-                "lr": self.lr_backbone,
-            },
-        ]
-        optimizer = torch.optim.AdamW(param_dicts, lr=self.lr,
-                                      weight_decay=self.weight_decay)
-        return optimizer
+        self.mAP(results, labels)
 
 
 class FasterRCNN(ZapModel):
@@ -205,15 +197,8 @@ class FasterRCNN(ZapModel):
         self.log('val_loss', loss, on_epoch=True, prog_bar=True)
         return loss
 
-    def test_step(self, batch, batch_idx):
+    def test_step(self, batch):
         images, targets, _ = self.common_step(batch)
 
         results = self.model(images)
-        precision = self.precision(results, targets)
-
-        # for k, v in precision.items():
-        #     self.log(k, v, on_epoch=True, batch_size=len(batch))
-
-        self.log_precision(precision, batch_size=len(batch))
-
-        return precision
+        self.mAP(results, targets)

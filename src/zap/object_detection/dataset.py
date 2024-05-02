@@ -38,6 +38,11 @@ class DETADataset(CocoDetection):
         super(DETADataset, self).__init__(img_folder, ann_file)
         self.processor = processor
 
+        # Create label map
+        self.label_map = {}
+        for category in self.coco.cats.values():
+            self.label_map[int(category['id'])] = category['name']
+
     def __getitem__(self, idx):
         # read in PIL image and target in COCO format
         # feel free to add data augmentation here before passing them to the next step
