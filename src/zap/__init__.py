@@ -9,10 +9,11 @@ supress_pydantic_warnings()  # noqa
 
 from typing import Any  # noqa
 
-from lightning.pytorch import LightningDataModule  # noqa
+from lightning.pytorch import LightningDataModule, LightningModule  # noqa
 from lightning.pytorch.cli import LightningCLI  # noqa
 from PIL import Image  # noqa
 from torch.utils.data import DataLoader, Dataset  # noqa
+from torchmetrics.detection import MeanAveragePrecision  # noqa
 
 format_lightning_warnings_and_logs()
 
@@ -47,6 +48,38 @@ class Zap():
             return_predictions=True,
             ckpt_path=ckpt_path)
         return preds
+
+
+# TODO: test compatibility with classification and segmentation models
+class ZapModel(LightningModule):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+        self.mAP = MeanAveragePrecision(class_metrics=True)
+
+    def on_test_epoch_start(self) -> None:
+        self.label_map = self.trainer.datamodule.label_map
+
+    def on_test_end(self) -> None:
+        mAP = self.mAP.compute()
+        self.log_precision(mAP)
+
+    def log_precision(self, precision):
+        for k, v in precision.items():
+            if k == 'classes':  # don't record the classes key; not useful
+                continue
+
+            # handle single class vs multiclass
+            class_values = v.tolist()
+            if not isinstance(class_values, list):
+                # if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
+                self.logger.experiment.log_metric(self.logger.run_id, k, class_values)
+            else:
+                for class_index, val in enumerate(class_values):  # log each class metric separately
+                    # if val >= 0:
+                    k = k.replace('_per_class', '_class')
+                    self.logger.experiment.log_metric(self.logger.run_id,
+                                                      f'{k}_{self.label_map[class_index]}',
+                                                      val)
 
 
 class ZapDataModule(LightningDataModule):
@@ -99,5 +132,5 @@ class InferenceDataset(Dataset):
 
         if self.transform is not None:
             img = self.transform(img)
-
-        return img
+        # TODO: test compatibility with all models
+        return img, self.images[index]
