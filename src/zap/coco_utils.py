@@ -144,17 +144,12 @@ class COCOUtils():
         self.coco_data['categories'].insert(0, nothing_category)
         return self.coco_data
 
-    def remove_labeless_images(self):
-        img_ids = self.coco.getImgIds()
-        ann_img_ids = set([ann['image_id'] for ann in self.coco.dataset['annotations']])
-
-        images_with_no_annotations = [img_id for img_id in img_ids if img_id not in ann_img_ids]
-
+    def remove_images(self, images):
         filtered_images = []
         filtered_annotations = []
 
         for img in tqdm(self.coco_data['images']):
-            if img['file_name'] not in images_with_no_annotations:
+            if img['file_name'] not in images:
                 for ann in self.coco_data['annotations']:
                     if ann['image_id'] == img['id']:
                         img['include'] = True
@@ -175,6 +170,14 @@ class COCOUtils():
 
         self.coco_data = filtered_coco_data
         return self.coco_data
+
+    def remove_labeless_images(self):
+        img_ids = self.coco.getImgIds()
+        ann_img_ids = set([ann['image_id'] for ann in self.coco.dataset['annotations']])
+
+        images_with_no_annotations = [img_id for img_id in img_ids if img_id not in ann_img_ids]
+
+        return self.remove_images(images_with_no_annotations)
 
     def remove_degenerate_bboxes(self):
         images_to_remove = []
