@@ -197,7 +197,7 @@ class FasterRCNN(ZapModel):
         self.log('val_loss', loss, on_epoch=True, prog_bar=True)
         return loss
 
-    def test_step(self, batch):
+    def test_step(self, batch, batch_idx):
         images, targets, _ = self.common_step(batch)
 
         results = self.model(images)
