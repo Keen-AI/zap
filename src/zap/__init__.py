@@ -1,4 +1,5 @@
 import os
+from pprint import pprint
 
 from dotenv import load_dotenv
 
@@ -61,25 +62,21 @@ class ZapModel(LightningModule):
 
     def on_test_end(self) -> None:
         mAP = self.mAP.compute()
+        pprint(mAP)  # TODO: use the CLI logger?
         self.log_precision(mAP)
 
     def log_precision(self, precision):
-        for k, v in precision.items():
-            if k == 'classes':  # don't record the classes key; not useful
-                continue
+        classes = precision.pop('classes', None)  # get the classes but don't log them
 
-            # handle single class vs multiclass
+        for k, v in precision.items():
+            # handling single class vs multiclass
             class_values = v.tolist()
             if not isinstance(class_values, list):
-                # if class_values >= 0:  # mAP API returns -1 for missing classes; need to ignore
                 self.logger.experiment.log_metric(self.logger.run_id, k, class_values)
             else:
-                for class_index, val in enumerate(class_values):  # log each class metric separately
-                    # if val >= 0:
+                for pair in zip(classes, class_values):  # log each class metric separately
                     k = k.replace('_per_class', '_class')
-                    self.logger.experiment.log_metric(self.logger.run_id,
-                                                      f'{k}_{self.label_map[class_index]}',
-                                                      val)
+                    self.logger.experiment.log_metric(self.logger.run_id, f'{k}_{self.label_map[pair[0]]}', pair[1])
 
 
 class ZapDataModule(LightningDataModule):
