@@ -30,42 +30,11 @@ from collections import defaultdict
 import torch
 from PIL import Image
 from torch.utils.data import Dataset
-from torchvision.datasets import CocoDetection
 
 
-class DETADataset(CocoDetection):
-    def __init__(self, img_folder, ann_file, processor):
-        super(DETADataset, self).__init__(img_folder, ann_file)
-        self.processor = processor
-
-        # Create label map
-        self.label_map = {}
-        for category in self.coco.cats.values():
-            self.label_map[int(category['id'])] = category['name']
-
-    def __getitem__(self, idx):
-        # read in PIL image and target in COCO format
-        # feel free to add data augmentation here before passing them to the next step
-        img, target = super(DETADataset, self).__getitem__(idx)
-        file_name = self.coco.loadImgs(idx)[0]["file_name"]
-
-        # preprocess image and target (converting target to DETR format, resizing
-        # + normalization of both image and target)
-        image_id = self.ids[idx]
-        target = {'image_id': image_id, 'annotations': target}
-        encoding = self.processor(images=img, annotations=target, return_tensors="pt")
-        pixel_values = encoding["pixel_values"].squeeze()  # remove batch dimension
-        target = encoding["labels"][0]  # remove batch dimension
-
-        return pixel_values, target, file_name
-
-
-class FasterRCNNDataset(Dataset):
-    """Converts a COCO dataset to a format accepted by FasterRCNN"""
-
-    def __init__(self, img_folder, ann_file, transforms=None):
+class COCODataset(Dataset):
+    def __init__(self, img_folder, ann_file):
         self.img_folder = img_folder
-        self.transforms = transforms
 
         # load the COCO annotations json
         with open(str(ann_file)) as file_obj:
@@ -85,6 +54,41 @@ class FasterRCNNDataset(Dataset):
 
     def __len__(self):
         return len(self.coco_data['images'])
+
+    def __getitem__(self, index):
+        return super().__getitem__(index)
+
+
+class DETADataset(COCODataset):
+    def __init__(self, img_folder, ann_file, processor):
+        super().__init__(img_folder, ann_file)
+        self.processor = processor
+
+    def __getitem__(self, index):
+        image_data = self.coco_data['images'][index]
+        image_id = image_data['id']
+
+        image_path = self.img_folder / image_data['file_name']
+        image = Image.open(image_path).convert('RGB')
+
+        annos = self.image_id_to_annos[image_id]
+
+        # preprocess image and target (converting target to DETR format, resizing
+        # + normalization of both image and target)
+        target = {'image_id': image_id, 'annotations': annos}
+        encoding = self.processor(images=image, annotations=target, return_tensors="pt")
+        pixel_values = encoding["pixel_values"].squeeze()  # remove batch dimension
+        target = encoding["labels"][0]  # remove batch dimension
+
+        return pixel_values, target, image_path
+
+
+class FasterRCNNDataset(COCODataset):
+    """Converts a COCO dataset to a format accepted by FasterRCNN"""
+
+    def __init__(self, img_folder, ann_file, transforms=None):
+        super().__init__(img_folder, ann_file)
+        self.transforms = transforms
 
     def __getitem__(self, index):
         image_data = self.coco_data['images'][index]
