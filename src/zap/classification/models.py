@@ -18,7 +18,7 @@ class ResNet34(pl.LightningModule):
 
         self.loss_fn = torch.nn.CrossEntropyLoss()
         self.save_hyperparameters()
-        self.multiclass_precision = MulticlassPrecision(num_classes=num_classes)
+        self.multiclass_precision = MulticlassPrecision(num_classes=num_classes, average=None)
 
     def forward(self, x):
         pred = self.model(x)
@@ -48,7 +48,7 @@ class ResNet34(pl.LightningModule):
         loss = self.loss_fn(output, label)
         self.log('test_loss', loss)
 
-        mcp = self.multiclass_precision(output, label, average=None)
+        mcp = self.multiclass_precision(output, label)
         self.log('precision', mcp)
 
 
