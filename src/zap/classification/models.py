@@ -48,7 +48,17 @@ class ResNet34(pl.LightningModule):
         loss = self.loss_fn(output, label)
         self.log('test_loss', loss)
 
-        mcp = self.multiclass_precision(output, label)
-        self.log('precision', mcp)
+        self.multiclass_precision(output, label)
+        
+    
+    def on_test_epoch_start(self) -> None:
+        self.label_map_reversed = self.trainer.datamodule.label_map_reversed
+        
+
+    def on_test_end(self):
+        mcp = self.multiclass_precision.compute()
+
+        for i, precision in enumerate(mcp):
+            self.logger.experiment.log_metric(self.logger.run_id, f'mcp_{self.label_map_reversed[i]}', precision)
 
 
