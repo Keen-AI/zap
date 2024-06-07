@@ -5,7 +5,7 @@ import lightning.pytorch as pl
 import torch
 import torch.nn as nn
 import torchvision.models as models
-from torchmetrics.classification import MulticlassPrecision
+from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
 
 
 # TODO: can we make this dynamic in terms of which ResNet is used like we did in kai-classification?
@@ -19,6 +19,7 @@ class ResNet34(pl.LightningModule):
         self.loss_fn = torch.nn.CrossEntropyLoss()
         self.save_hyperparameters()
         self.multiclass_precision = MulticlassPrecision(num_classes=num_classes, average=None)
+        self.multiclass_recall = MulticlassRecall(num_classes=num_classes, average=None)
 
     def forward(self, x):
         pred = self.model(x)
@@ -49,6 +50,7 @@ class ResNet34(pl.LightningModule):
         self.log('test_loss', loss)
 
         self.multiclass_precision(output, label)
+        self.multiclass_recall(output, label)
         
     
     def on_test_epoch_start(self) -> None:
@@ -57,8 +59,12 @@ class ResNet34(pl.LightningModule):
 
     def on_test_end(self):
         mcp = self.multiclass_precision.compute()
+        mcr = self.multiclass_recall.compute()
 
-        for i, precision in enumerate(mcp):
-            self.logger.experiment.log_metric(self.logger.run_id, f'mcp_{self.label_map_reversed[i]}', precision)
+        metrics = zip(mcp, mcr)
+        run_id = self.logger.run_id
+        for i, m in enumerate(metrics):
+            self.logger.experiment.log_metric(run_id, f'precision_{self.label_map_reversed[i]}', m[0])
+            self.logger.experiment.log_metric(run_id, f'recall_{self.label_map_reversed[i]}', m[1])
 
 
