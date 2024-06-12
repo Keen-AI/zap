@@ -161,11 +161,8 @@ class FasterRCNN(ZapModel):
         return super().configure_optimizers()
 
     def forward(self, batch):
-        input_data = batch[0]
-        filenames = batch[1]
-
-        preds = self.model(input_data)
-        return tuple(zip(preds, filenames))
+        preds = self.model(batch)
+        return preds
 
     def common_step(self, batch):
         images, targets, filenames = batch
