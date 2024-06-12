@@ -21,8 +21,8 @@ class ResNet34(pl.LightningModule):
         self.multiclass_precision = MulticlassPrecision(num_classes=num_classes, average=None)
         self.multiclass_recall = MulticlassRecall(num_classes=num_classes, average=None)
 
-    def forward(self, x):
-        pred = self.model(x)
+    def forward(self, batch):
+        pred = self.model(batch)
         probabilities = nn.functional.softmax(pred, dim=1)
         return probabilities
 

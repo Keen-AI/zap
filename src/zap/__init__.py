@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-
+from pathlib import Path
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
 
@@ -84,6 +84,21 @@ class ZapModel(LightningModule):
 class ZapDataModule(LightningDataModule):
     def __init__(self) -> None:
         super().__init__()
+        
+        # we get the data_dir from the data module class that inherits this class
+        self.data_dir = getattr(self, 'data_dir', None)
+        if not self.data_dir:
+            raise AttributeError('Missing data directory')
+
+        self.predict_dir = self.data_dir / 'predict' / 'images'
+        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
+        self.predict_dataset = InferenceDataset(prediction_images, transforms=self.transforms)
+        
+        # batch the images and expose for convenience during inference
+        self.prediction_images = []
+        for i in range(0, len(prediction_images), self.batch_size):
+            self.prediction_images.append(tuple(prediction_images[i:i+self.batch_size]))
+        
 
     def prepare_data(self, bucket=None):
         # NOTE: do not assign state here (e.g: self.x = 123)
@@ -118,9 +133,9 @@ class ZapDataModule(LightningDataModule):
 
 
 class InferenceDataset(Dataset):
-    def __init__(self, images, transform=None) -> None:
+    def __init__(self, images, transforms=None) -> None:
         self.images = images
-        self.transform = transform
+        self.transforms = transforms
         super().__init__()
 
     def __len__(self):
@@ -129,7 +144,8 @@ class InferenceDataset(Dataset):
     def __getitem__(self, index: int) -> Any:
         img = Image.open(self.images[index]).convert('RGB')
 
-        if self.transform is not None:
-            img = self.transform(img)
+        if self.transforms is not None:
+            img = self.transforms(img)
+        
         # TODO: test compatibility with all models
-        return img, self.images[index]
+        return img

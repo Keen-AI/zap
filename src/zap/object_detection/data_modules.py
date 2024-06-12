@@ -41,7 +41,6 @@ from .dataset import DETADataset, FasterRCNNDataset
 class DETADataModule(ZapDataModule):
     def __init__(self, data_dir, size, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
                  shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1, converter=None):
-        super().__init__()
 
         if converter:
             converter_fn = parse_module_from_string(converter)
@@ -53,6 +52,7 @@ class DETADataModule(ZapDataModule):
                 "shortest_edge": size[0],
                 "longest_edge": size[1]})
 
+        self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
@@ -63,8 +63,8 @@ class DETADataModule(ZapDataModule):
         self.transforms = Compose(transforms) if transforms else None
 
         dataset = DETADataset(
-            img_folder=Path(data_dir, 'images'),
-            ann_file=Path(data_dir, 'labels.json'),
+            img_folder=self.data_dir / 'images',
+            ann_file=self.data_dir / 'labels.json',
             processor=self.processor)
 
         self.label_map = dataset.label_map
@@ -73,11 +73,7 @@ class DETADataModule(ZapDataModule):
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
-        self.predict_dir = Path(data_dir, 'predict', 'images')
-        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
-        # TODO: rename transforms to be consistent
-        self.predict_dataset = InferenceDataset(prediction_images, transform=self.transforms)
-
+        super().__init__()
         self.save_hyperparameters()
 
     def collate_fn(self, batch):
@@ -98,8 +94,8 @@ class DETADataModule(ZapDataModule):
 class FasterRCNNDataModule(ZapDataModule):
     def __init__(self, data_dir, batch_size=1, num_workers=0, pin_memory=True, transforms=None,
                  shuffle=True, train_split=0.7, test_split=0.2, val_split=0.1):
-        super().__init__()
 
+        self.data_dir = Path(data_dir)
         self.batch_size = batch_size
         self.num_workers = num_workers
         self.pin_memory = pin_memory
@@ -109,8 +105,8 @@ class FasterRCNNDataModule(ZapDataModule):
         self.transforms = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT.transforms()
 
         dataset = FasterRCNNDataset(
-            img_folder=Path(data_dir, 'images'),
-            ann_file=Path(data_dir, 'labels.json'),
+            img_folder=self.data_dir / 'images',
+            ann_file=self.data_dir / 'labels.json',
             transforms=self.transforms)
 
         self.label_map = dataset.label_map
@@ -119,11 +115,7 @@ class FasterRCNNDataModule(ZapDataModule):
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
-        self.predict_dir = Path(data_dir, 'predict', 'images')
-        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
-        # TODO: rename transforms to be consistent
-        self.predict_dataset = InferenceDataset(prediction_images, transform=self.transforms)
-
+        super().__init__()
         self.save_hyperparameters()
 
     def collate_fn(self, batch):
