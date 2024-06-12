@@ -6,11 +6,11 @@ from torch.utils.data import Dataset
 
 
 class ClassificationDataset(Dataset):
-    def __init__(self, images, labels, label_map, transform=None) -> None:
+    def __init__(self, images, labels, label_map, transforms=None) -> None:
         self.images = images
         self.labels = labels
         self.label_map = label_map
-        self.transform = transform
+        self.transforms = transforms
         super().__init__()
 
     def __len__(self):
@@ -23,7 +23,7 @@ class ClassificationDataset(Dataset):
         label = self.labels.loc[self.images[index].name, 'label']
         label = self.label_map[label]
 
-        if self.transform is not None:
-            img = self.transform(img)
+        if self.transforms is not None:
+            img = self.transforms(img)
 
         return img, label

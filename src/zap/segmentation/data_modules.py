@@ -5,14 +5,13 @@ from torch import Generator
 from torch.utils.data import random_split
 from torchvision.transforms import Compose
 
-from .. import InferenceDataset, ZapDataModule
+from .. import ZapDataModule
 from .dataset import SegmentationDataset
 
 
 class SegmentationDataModule(ZapDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1,
                  batch_size=1, num_workers=0, pin_memory=True, shuffle=True, collate_fn=None):
-        super().__init__()
 
         self.data_dir = Path(data_dir)
 
@@ -32,17 +31,11 @@ class SegmentationDataModule(ZapDataModule):
         self.collate_fn = collate_fn
 
         dataset = SegmentationDataset(
-            self.images, self.masks, transform=self.transforms)
+            self.images, self.masks, transforms=self.transforms)
         #  TODO: look into using sklearn.model_selection.train_test_split instead
         generator = Generator()
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
-        # TODO: cleanup
-        self.predict_dir = Path(data_dir, 'predict', 'images')
-        prediction_images = list(self.predict_dir.glob(
-            '*.png')) + list(self.predict_dir.glob('*.jpg'))
-        self.predict_dataset = InferenceDataset(
-            prediction_images, transform=self.transforms)
-
+        super().__init__()
         self.save_hyperparameters()

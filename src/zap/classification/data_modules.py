@@ -13,11 +13,9 @@ from .dataset import ClassificationDataset
 
 class ClassificationDataModule(ZapDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1,
-                 batch_size=1, num_workers=0, pin_memory=True, shuffle=True, collate_fn=None):
-        super().__init__()
-
+                 batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
+        
         self.data_dir = Path(data_dir)
-
         self.image_dir = self.data_dir.joinpath('images')
         self.images = list(self.image_dir.glob('*.*'))
 
@@ -37,7 +35,7 @@ class ClassificationDataModule(ZapDataModule):
         self.num_workers = num_workers
         self.pin_memory = pin_memory
         self.shuffle = shuffle
-        self.collate_fn = collate_fn
+        self.collate_fn = None
 
         filtered_images = []
         for i in self.images:
@@ -53,10 +51,6 @@ class ClassificationDataModule(ZapDataModule):
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
-        self.predict_dir = Path(data_dir, 'predict', 'images')
-        prediction_images = list(self.predict_dir.glob(
-            '*.png')) + list(self.predict_dir.glob('*.jpg'))
-        self.predict_dataset = InferenceDataset(
-            prediction_images, transform=self.transforms)
 
+        super().__init__()  # important to initialise here
         self.save_hyperparameters()
