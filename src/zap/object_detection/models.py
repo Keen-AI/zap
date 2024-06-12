@@ -116,29 +116,33 @@ class Deta(ZapModel):
         if not loss:
             return None
 
-        H, W = labels[0]['orig_size'].tolist()
-        labels[0]['labels'] = labels[0].pop('class_labels')
+        target_sizes = []
+        for n in range(len(labels)):
+            H, W = labels[n]['orig_size'].tolist()
+            
+            # rename labels key
+            labels[n]['labels'] = labels[n].pop('class_labels')
 
-        # format GT bboxes to same format as results (xyxy) and un-normalise
-        xyxy_gt_boxes = center_to_corners_format(labels[0]['boxes']).tolist()
-        xyxy_scaled_gt_boxes = []
-        for b in xyxy_gt_boxes:
-            xmin, ymin, xmax, ymax = b
+            # format GT bboxes to same format as results (xyxy) and un-normalise
+            xyxy_gt_boxes = center_to_corners_format(labels[n]['boxes']).tolist()
+            xyxy_scaled_gt_boxes = []
+            for b in xyxy_gt_boxes:
+                xmin, ymin, xmax, ymax = b
 
-            xmin = xmin * W
-            ymin = ymin * H
-            xmax = xmax * W
-            ymax = ymax * H
+                xmin = xmin * W
+                ymin = ymin * H
+                xmax = xmax * W
+                ymax = ymax * H
 
-            xyxy_scaled_gt_boxes.append([xmin, ymin, xmax, ymax])
+                xyxy_scaled_gt_boxes.append([xmin, ymin, xmax, ymax])
 
-        labels[0]['boxes'] = tensor(xyxy_scaled_gt_boxes)
+            labels[n]['boxes'] = tensor(xyxy_scaled_gt_boxes)
+            target_sizes.append((H, W))
 
         #  get results from model
         results = self.processor.post_process_object_detection(outputs,
-                                                               target_sizes=[(H, W)],
+                                                               target_sizes=target_sizes,
                                                                threshold=0)
-
         self.mAP(results, labels)
 
 
