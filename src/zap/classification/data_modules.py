@@ -1,8 +1,9 @@
 import os
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
-from torch import Generator
+from torch import FloatTensor, Generator
 from torch.utils.data import random_split
 from torchvision.transforms import Compose
 
@@ -14,7 +15,7 @@ from .dataset import ClassificationDataset
 class ClassificationDataModule(ZapDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1,
                  batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
-        
+
         self.data_dir = Path(data_dir)
         self.image_dir = self.data_dir.joinpath('images')
         self.images = list(self.image_dir.glob('*.*'))
@@ -51,6 +52,32 @@ class ClassificationDataModule(ZapDataModule):
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
+        self.weights = self.compute_class_weights()
 
         super().__init__()  # important to initialise here
         self.save_hyperparameters()
+
+    def compute_class_weights(self):
+        if not getattr(self, 'train_dataloader'):
+            raise AttributeError(
+                'It looks like the training dataloader has not been instantiated yet. \
+                You can only use this function after creating the dataloaders')
+
+        class_counts = Counter()
+
+        # iterate through the dataloader and update the class counts
+        for _, labels in self.train_dataloader():
+            class_counts.update(labels.tolist())
+
+        #  calculate weight per class
+        total_samples = sum(class_counts.values())
+        num_classes = len(class_counts)
+        class_weights = {cls: total_samples / count for cls, count in class_counts.items()}
+
+        # normalise
+        weight_sum = sum(class_weights.values())
+        normalised_weights = {cls: weight / weight_sum for cls, weight in class_weights.items()}
+
+        # convert weights to a list and then to a tensor
+        weights = FloatTensor([normalised_weights[i] for i in range(num_classes)])
+        return weights
