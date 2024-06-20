@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from torch import Generator
+from torch import FloatTensor, Generator
 from torch.utils.data import random_split
 from torchvision.transforms import Compose
 
@@ -14,7 +14,7 @@ from .dataset import ClassificationDataset
 class ClassificationDataModule(ZapDataModule):
     def __init__(self, data_dir, transforms, train_split=0.7, test_split=0.2, val_split=0.1,
                  batch_size=1, num_workers=0, pin_memory=True, shuffle=True):
-        
+
         self.data_dir = Path(data_dir)
         self.image_dir = self.data_dir.joinpath('images')
         self.images = list(self.image_dir.glob('*.*'))
@@ -51,6 +51,7 @@ class ClassificationDataModule(ZapDataModule):
         self.train_dataset, self.test_dataset, self.val_dataset = random_split(
             dataset, [train_split, test_split, val_split], generator)
 
+        self.weights = self.compute_class_weights()
 
         super().__init__()  # important to initialise here
         self.save_hyperparameters()

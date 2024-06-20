@@ -1,7 +1,10 @@
 import os
-
-from dotenv import load_dotenv
+from collections import Counter
 from pathlib import Path
+
+import torch
+from dotenv import load_dotenv
+
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
 
@@ -84,7 +87,7 @@ class ZapModel(LightningModule):
 class ZapDataModule(LightningDataModule):
     def __init__(self) -> None:
         super().__init__()
-        
+
         # we get the data_dir from the data module class that inherits this class
         self.data_dir = getattr(self, 'data_dir', None)
         if not self.data_dir:
@@ -93,12 +96,36 @@ class ZapDataModule(LightningDataModule):
         self.predict_dir = self.data_dir / 'predict' / 'images'
         prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
         self.predict_dataset = InferenceDataset(prediction_images, transforms=self.transforms)
-        
+
         # batch the images and expose for convenience during inference
         self.prediction_images = []
         for i in range(0, len(prediction_images), self.batch_size):
-            self.prediction_images.append(tuple(prediction_images[i:i+self.batch_size]))
-        
+            self.prediction_images.append(tuple(prediction_images[i:i + self.batch_size]))
+
+    def compute_class_weights(self):
+        if not getattr(self, 'train_dataloader'):
+            raise AttributeError(
+                'It looks like the training dataloader has not been instantiated yet. \
+                You can only use this function after creating the dataloaders')
+
+        class_counts = Counter()
+
+        # iterate through the dataloader and update the class counts
+        for _, labels in self.train_dataloader():
+            class_counts.update(labels.tolist())
+
+        #  calculate weight per class
+        total_samples = sum(class_counts.values())
+        num_classes = len(class_counts)
+        class_weights = {cls: total_samples / count for cls, count in class_counts.items()}
+
+        # normalise
+        weight_sum = sum(class_weights.values())
+        normalised_weights = {cls: weight / weight_sum for cls, weight in class_weights.items()}
+
+        # convert weights to a list and then to a tensor
+        weights = torch.tensor([normalised_weights[i] for i in range(num_classes)], dtype=torch.float)
+        return weights
 
     def prepare_data(self, bucket=None):
         # NOTE: do not assign state here (e.g: self.x = 123)
@@ -146,6 +173,6 @@ class InferenceDataset(Dataset):
 
         if self.transforms is not None:
             img = self.transforms(img)
-        
+
         # TODO: test compatibility with all models
         return img

@@ -12,14 +12,16 @@ from torchmetrics.classification import MulticlassPrecision, MulticlassRecall
 class ResNet34(pl.LightningModule):
     def __init__(self, num_classes, bias):
         super().__init__()
-
         self.model = models.resnet.resnet34(weights="DEFAULT")
         self.model.fc = torch.nn.Linear(in_features=512, out_features=num_classes, bias=bias)
 
-        self.loss_fn = torch.nn.CrossEntropyLoss()
         self.save_hyperparameters()
         self.multiclass_precision = MulticlassPrecision(num_classes=num_classes, average=None)
         self.multiclass_recall = MulticlassRecall(num_classes=num_classes, average=None)
+
+    def on_fit_start(self) -> None:
+        weights = self.trainer.datamodule.weights.to(self.device)
+        self.loss_fn = torch.nn.CrossEntropyLoss(weights)
 
     def forward(self, batch):
         pred = self.model(batch)
@@ -51,11 +53,9 @@ class ResNet34(pl.LightningModule):
 
         self.multiclass_precision(output, label)
         self.multiclass_recall(output, label)
-        
-    
+
     def on_test_epoch_start(self) -> None:
         self.label_map_reversed = self.trainer.datamodule.label_map_reversed
-        
 
     def on_test_end(self):
         mcp = self.multiclass_precision.compute()
@@ -66,5 +66,3 @@ class ResNet34(pl.LightningModule):
         for i, m in enumerate(metrics):
             self.logger.experiment.log_metric(run_id, f'precision_{self.label_map_reversed[i]}', m[0])
             self.logger.experiment.log_metric(run_id, f'recall_{self.label_map_reversed[i]}', m[1])
-
-
