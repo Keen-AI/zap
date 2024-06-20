@@ -1,7 +1,5 @@
 import os
-from collections import Counter
 
-import torch
 from dotenv import load_dotenv
 
 from .formatter import (format_lightning_warnings_and_logs,
@@ -100,31 +98,6 @@ class ZapDataModule(LightningDataModule):
         self.prediction_images = []
         for i in range(0, len(prediction_images), self.batch_size):
             self.prediction_images.append(tuple(prediction_images[i:i + self.batch_size]))
-
-    def compute_class_weights(self):
-        if not getattr(self, 'train_dataloader'):
-            raise AttributeError(
-                'It looks like the training dataloader has not been instantiated yet. \
-                You can only use this function after creating the dataloaders')
-
-        class_counts = Counter()
-
-        # iterate through the dataloader and update the class counts
-        for _, labels in self.train_dataloader():
-            class_counts.update(labels.tolist())
-
-        #  calculate weight per class
-        total_samples = sum(class_counts.values())
-        num_classes = len(class_counts)
-        class_weights = {cls: total_samples / count for cls, count in class_counts.items()}
-
-        # normalise
-        weight_sum = sum(class_weights.values())
-        normalised_weights = {cls: weight / weight_sum for cls, weight in class_weights.items()}
-
-        # convert weights to a list and then to a tensor
-        weights = torch.tensor([normalised_weights[i] for i in range(num_classes)], dtype=torch.float)
-        return weights
 
     def prepare_data(self, bucket=None):
         # NOTE: do not assign state here (e.g: self.x = 123)

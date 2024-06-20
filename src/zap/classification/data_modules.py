@@ -1,8 +1,9 @@
 import os
+from collections import Counter
 from pathlib import Path
 
 import pandas as pd
-from torch import Generator
+from torch import FloatTensor, Generator
 from torch.utils.data import random_split
 from torchvision.transforms import Compose
 
@@ -55,3 +56,28 @@ class ClassificationDataModule(ZapDataModule):
 
         super().__init__()  # important to initialise here
         self.save_hyperparameters()
+
+    def compute_class_weights(self):
+        if not getattr(self, 'train_dataloader'):
+            raise AttributeError(
+                'It looks like the training dataloader has not been instantiated yet. \
+                You can only use this function after creating the dataloaders')
+
+        class_counts = Counter()
+
+        # iterate through the dataloader and update the class counts
+        for _, labels in self.train_dataloader():
+            class_counts.update(labels.tolist())
+
+        #  calculate weight per class
+        total_samples = sum(class_counts.values())
+        num_classes = len(class_counts)
+        class_weights = {cls: total_samples / count for cls, count in class_counts.items()}
+
+        # normalise
+        weight_sum = sum(class_weights.values())
+        normalised_weights = {cls: weight / weight_sum for cls, weight in class_weights.items()}
+
+        # convert weights to a list and then to a tensor
+        weights = FloatTensor([normalised_weights[i] for i in range(num_classes)])
+        return weights
