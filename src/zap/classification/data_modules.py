@@ -2,7 +2,7 @@ import os
 from pathlib import Path
 
 import pandas as pd
-from torch import FloatTensor, Generator
+from torch import Generator
 from torch.utils.data import random_split
 from torchvision.transforms import Compose
 
