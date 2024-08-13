@@ -76,6 +76,15 @@ class DETADataModule(ZapDataModule):
         super().__init__()
         self.save_hyperparameters()
 
+    def predict_collate_fn(self, batch):
+        pixel_values = []
+        for img in batch:
+            encoding = self.processor(images=img, return_tensors="pt")
+            pixel_values.append(encoding["pixel_values"].squeeze())
+
+        encoding = self.processor.pad(pixel_values, return_tensors="pt")
+        return encoding['pixel_values']
+
     def collate_fn(self, batch):
         file_names = [item[2] for item in batch]
         pixel_values = [item[0] for item in batch]
