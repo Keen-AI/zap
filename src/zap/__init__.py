@@ -1,7 +1,7 @@
 import os
 
 from dotenv import load_dotenv
-from pathlib import Path
+
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
 
@@ -84,7 +84,7 @@ class ZapModel(LightningModule):
 class ZapDataModule(LightningDataModule):
     def __init__(self) -> None:
         super().__init__()
-        
+
         # we get the data_dir from the data module class that inherits this class
         self.data_dir = getattr(self, 'data_dir', None)
         if not self.data_dir:
@@ -93,12 +93,11 @@ class ZapDataModule(LightningDataModule):
         self.predict_dir = self.data_dir / 'predict' / 'images'
         prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
         self.predict_dataset = InferenceDataset(prediction_images, transforms=self.transforms)
-        
+
         # batch the images and expose for convenience during inference
         self.prediction_images = []
         for i in range(0, len(prediction_images), self.batch_size):
-            self.prediction_images.append(tuple(prediction_images[i:i+self.batch_size]))
-        
+            self.prediction_images.append(tuple(prediction_images[i:i + self.batch_size]))
 
     def prepare_data(self, bucket=None):
         # NOTE: do not assign state here (e.g: self.x = 123)
@@ -127,9 +126,10 @@ class ZapDataModule(LightningDataModule):
                           shuffle=False, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
+        collate_fn = self.predict_collate_fn if hasattr(self, 'predict_collate_fn') else None
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False, collate_fn=self.collate_fn)
+                          shuffle=False, collate_fn=collate_fn)
 
 
 class InferenceDataset(Dataset):
@@ -146,6 +146,6 @@ class InferenceDataset(Dataset):
 
         if self.transforms is not None:
             img = self.transforms(img)
-        
+
         # TODO: test compatibility with all models
         return img
