@@ -30,6 +30,8 @@ class Zap():
                                                "default_config_files": [base_config_path]})
         self.config = self.cli.config.as_dict()
 
+        self.cli.trainer.logger.log_hyperparams({'zap_model': self.config['model']['class_path'].split('.')[-1]})
+        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
         self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
 
     def fit(self):
@@ -58,6 +60,7 @@ class ZapModel(LightningModule):
             self.mAP = MeanAveragePrecision(class_metrics=True)
 
     def on_fit_end(self) -> None:
+        self.logger.experiment.log_param(self.logger.run_id, 'task', self.trainer.model.task)
         self.logger.experiment.log_param(self.logger.run_id, 'train_set', len(self.trainer.datamodule.train_dataset))
         self.logger.experiment.log_param(self.logger.run_id, 'test_set', len(self.trainer.datamodule.test_dataset))
         self.logger.experiment.log_param(self.logger.run_id, 'val_set', len(self.trainer.datamodule.val_dataset))
