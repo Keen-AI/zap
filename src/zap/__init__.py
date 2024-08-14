@@ -1,6 +1,7 @@
 import os
 
 from dotenv import load_dotenv
+from lightning.pytorch.loggers import MLFlowLogger
 
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
@@ -31,9 +32,6 @@ class Zap():
         self.config = self.cli.config.as_dict()
 
         self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
-        self.cli.trainer.logger.log_hyperparams({'train_set': len(self.cli.datamodule.train_dataset)})
-        self.cli.trainer.logger.log_hyperparams({'test_set': len(self.cli.datamodule.test_dataset)})
-        self.cli.trainer.logger.log_hyperparams({'val_set': len(self.cli.datamodule.val_dataset)})
 
     def fit(self):
         self.cli.trainer.fit(self.cli.model, self.cli.datamodule)
@@ -54,19 +52,30 @@ class Zap():
 class ZapModel(LightningModule):
     def __init__(self, *args: Any, **kwargs: Any) -> None:
         super().__init__(*args, **kwargs)
-        self.mAP = MeanAveragePrecision(class_metrics=True)
+
+        self.task = getattr(self, 'task', None)
+        self.mAP = None
+        if self.task == 'object_detection':
+            self.mAP = MeanAveragePrecision(class_metrics=True)
+
+    def on_fit_end(self) -> None:
+        self.logger.experiment.log_param(self.logger.run_id, 'train_set', len(self.trainer.datamodule.train_dataset))
+        self.logger.experiment.log_param(self.logger.run_id, 'test_set', len(self.trainer.datamodule.test_dataset))
+        self.logger.experiment.log_param(self.logger.run_id, 'val_set', len(self.trainer.datamodule.val_dataset))
 
     def on_test_epoch_start(self) -> None:
         self.label_map = self.trainer.datamodule.label_map
 
     def on_test_end(self) -> None:
-        mAP = self.mAP.compute()
-        self.log_precision(mAP)
+        if self.mAP:
+            mAP = self.mAP.compute()
+            self.log_precision(mAP)
 
     def log_precision(self, precision):
         classes = precision.pop('classes', None)  # get the classes but don't log them
 
         for k, v in precision.items():
+            print('>>>>>', k, v)
             k = k.replace('map', 'mAP').replace('mar', 'mAR')
             class_values = v.tolist()
 
@@ -106,8 +115,6 @@ class ZapDataModule(LightningDataModule):
             pass  # TODO: download data from bucket/database
 
     def setup(self, stage):
-        # NOTE: this is called for each of trainer.train|test|validate
-        # as such I don't see why we need to split the datasets here and not in the __init__
         pass
 
     def train_dataloader(self):

@@ -38,6 +38,7 @@ from .. import ZapModel
 
 class Deta(ZapModel):
     def __init__(self, lr, lr_backbone, weight_decay, num_classes):
+        self.task = 'object_detection'
         super().__init__()
         # replace COCO classification head with custom head
         # we specify the "no_timm" variant here to not rely on the timm library
@@ -119,7 +120,7 @@ class Deta(ZapModel):
         target_sizes = []
         for n in range(len(labels)):
             H, W = labels[n]['orig_size'].tolist()
-            
+
             # rename labels key
             labels[n]['labels'] = labels[n].pop('class_labels')
 
@@ -148,6 +149,7 @@ class Deta(ZapModel):
 
 class FasterRCNN(ZapModel):
     def __init__(self, num_classes):
+        self.task = 'object_detection'
         super().__init__()
 
         self.model = fasterrcnn_resnet50_fpn_v2(weights=FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT)
