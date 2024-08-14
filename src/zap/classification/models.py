@@ -1,7 +1,6 @@
 
 from typing import Any
 
-import lightning.pytorch as pl
 import torch
 import torch.nn as nn
 import torchvision.models as models

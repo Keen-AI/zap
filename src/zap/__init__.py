@@ -1,7 +1,6 @@
 import os
 
 from dotenv import load_dotenv
-from lightning.pytorch.loggers import MLFlowLogger
 
 from .formatter import (format_lightning_warnings_and_logs,
                         supress_pydantic_warnings)
@@ -75,7 +74,6 @@ class ZapModel(LightningModule):
         classes = precision.pop('classes', None)  # get the classes but don't log them
 
         for k, v in precision.items():
-            print('>>>>>', k, v)
             k = k.replace('map', 'mAP').replace('mar', 'mAR')
             class_values = v.tolist()
 
