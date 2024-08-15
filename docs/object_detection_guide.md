@@ -37,13 +37,13 @@ Here's an example configuration file that uses the state-of-the-art DETA archite
 model:
   class_path: zap.object_detection.models.Deta
   init_args:
-    num_classes: 1
+    num_classes: 2
     lr: 1.0e-04
     lr_backbone: 1.0e-05
     weight_decay: 1.0e-04
 
 data:
-  class_path: zap.object_detection.data_modules.ObjectDetectionDataModule
+  class_path: zap.object_detection.data_modules.DETADataModule
   init_args:
     data_dir: data
     size:
@@ -52,14 +52,15 @@ data:
     train_split: 0.7
     test_split: 0.2
     val_split: 0.1
-    batch_size: 1
-    num_workers: 0
+    batch_size: 2 # ⬅︎ adjust this for your machine
+    num_workers: 20 # ⬅︎ adjust this for your machine
     pin_memory: true
     shuffle: true
 ```
 
 Currently we've hardcoded the optimizer for the DETA model due to some issues around running it from the config file.
 
-Also note that transforms have not been tested with this model.
+> [!WARNING]  
+> Transforms have not been tested with this model.
 
 To learn more about this config file and how to use it, familiarise yourself with the Pytorch Lightning [docs](https://lightning.ai/docs/pytorch/stable/levels/advanced_level_15.html).

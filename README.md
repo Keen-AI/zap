@@ -5,9 +5,9 @@
 
 **Zen AI Pipeline**
 
-<small>🚧 IN DEVELOPMENT 🚧</small>
+<small>🚧 Under Development 🚧</small>
 
-<small>v0.0.4-alpha</small>
+<small>v0.0.5-alpha</small>
 
 </div>
 
@@ -42,21 +42,18 @@ These are some of the options that Lightning makes available and we've included 
 
 #### Supported models
 
-| Model       | Type             | Status | Loss              | Import Path                             |
-| ----------- | ---------------- | :----: | ----------------- | --------------------------------------- |
-| ResNet34    | Classification   |   ✅   | CrossEntropyLoss  | `zap.classification.models.ResNet34`    |
-| UNet        | Segmentation     |   ✅   | BCEWithLogitsLoss | `zap.segmentation.models.UNet`          |
-| DeepLabV3+  | Segmentation     |   ✅   | BCEWithLogitsLoss | `zap.segmentation.models.DeepLabV3Plus` |
-| DETA        | Object Detection |   ✅   | Combination       | `zap.object_detection.models.Deta`      |
-| ResNet50    | Classification   |   🚧   | -                 | -                                       |
-| ResNet152   | Classification   |   🚧   | -                 | -                                       |
-| DenseNet121 | Classification   |   🚧   | -                 | -                                       |
-| DenseNet201 | Classification   |   🚧   | -                 | -                                       |
-| UNet++      | Segmentation     |   🚧   | -                 | -                                       |
-| DeepLabV3   | Segmentation     |   🚧   | -                 | -                                       |
-| FasterRCNN  | Object Detection |   🚧   | -                 | -                                       |
+So far we've implemented 1 classification model, 2 object detection models and 2 segmentation models. We have plans to implement more architectures.
 
-> **ℹ️ Coming soon:** dynamic loss functions
+| Model      | Type             |    Status     | Loss              | Import Path                             |
+| ---------- | ---------------- | :-----------: | ----------------- | --------------------------------------- |
+| ResNet34   | Classification   |      ✅       | CrossEntropyLoss  | `zap.classification.models.ResNet34`    |
+| FasterRCNN | Object Detection |      ✅       | Combination       | `zap.object_detection.FasterRCNN` -     |
+| DETA       | Object Detection |      ✅       | Combination       | `zap.object_detection.models.Deta`      |
+| UNet       | Segmentation     | ⚠️ (untested) | BCEWithLogitsLoss | `zap.segmentation.models.UNet`          |
+| DeepLabV3+ | Segmentation     | ⚠️ (untested) | BCEWithLogitsLoss | `zap.segmentation.models.DeepLabV3Plus` |
+
+> [!NOTE]  
+> Coming soon: more architectures and a choice of loss function
 
 ## How To Guide
 
@@ -132,9 +129,11 @@ Zap will automatically save the checkpoints of each epoch in a folder called `ml
 
 It will only save the **best** checkpoint, which is determined by having the **lowest validation loss**.
 
-> ℹ️ Currently the MLFlow logger creates a numbered folder inside `mlruns` for each experiment; inside the numbered folder it creates another folder for the current run, named with a long GUID. Not sure why it uses numbers and GUIDs instead of the experiment name and the human-friendly run IDs it displays in the UI.
+> [!NOTE]  
+> Currently the MLFlow logger creates a numbered folder inside `mlruns` for each experiment; inside the numbered folder it creates another folder for the current run, named with a long GUID. Not sure why it uses numbers and GUIDs instead of the experiment name and the human-friendly run IDs it displays in the UI.
 
-> ⚠️ Currently checkpoints are only uploaded to a bucket if the training run finishes "naturally", i.e. if the early stopping kicks. If you cancel a run or if the trainer reaches the maximum number of epochs (100), the checkpoints are only stored locally
+> [!WARNING]
+> Currently checkpoints are only uploaded to a bucket if the training run finishes "naturally", i.e. if the early stopping kicks. If you cancel a run or if the trainer reaches the maximum number of epochs (100), the checkpoints are only stored locally
 
 ### Testing separately
 
