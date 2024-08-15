@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -9,10 +10,11 @@ supress_pydantic_warnings()  # noqa
 
 from typing import Any  # noqa
 
-from lightning.pytorch import LightningDataModule  # noqa
+from lightning.pytorch import LightningDataModule, LightningModule  # noqa
 from lightning.pytorch.cli import LightningCLI  # noqa
 from PIL import Image  # noqa
 from torch.utils.data import DataLoader, Dataset  # noqa
+from torchmetrics.detection import MeanAveragePrecision  # noqa
 
 format_lightning_warnings_and_logs()
 
@@ -27,12 +29,6 @@ class Zap():
         self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, save_config_callback=None, run=False,
                                 parser_kwargs={"parser_mode": "omegaconf",
                                                "default_config_files": [base_config_path]})
-        self.config = self.cli.config.as_dict()
-
-        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
-        self.cli.trainer.logger.log_hyperparams({'train_set': len(self.cli.datamodule.train_dataset)})
-        self.cli.trainer.logger.log_hyperparams({'test_set': len(self.cli.datamodule.test_dataset)})
-        self.cli.trainer.logger.log_hyperparams({'val_set': len(self.cli.datamodule.val_dataset)})
 
     def fit(self):
         self.cli.trainer.fit(self.cli.model, self.cli.datamodule)
@@ -41,17 +37,86 @@ class Zap():
         self.cli.trainer.test(self.cli.model, self.cli.datamodule, ckpt_path=ckpt_path)
 
     def predict(self, ckpt_path="last"):
+        # Not sure if there's a better way but this fixes prediction runs being logged in MLFlow
+        self.cli.trainer.logger = None
+
         preds = self.cli.trainer.predict(
             self.cli.model,
             self.cli.datamodule,
             return_predictions=True,
             ckpt_path=ckpt_path)
+
         return preds
+
+
+# TODO: test compatibility with classification and segmentation models
+class ZapModel(LightningModule):
+    def __init__(self, *args: Any, **kwargs: Any) -> None:
+        super().__init__(*args, **kwargs)
+
+        self.task = getattr(self, 'task', None)
+        self.mAP = None
+        if self.task == 'object_detection':
+            self.mAP = MeanAveragePrecision(class_metrics=True)
+
+    def on_fit_start(self) -> None:
+        run_id = self.logger.run_id
+
+        self.logger.experiment.log_param(run_id, 'zap_model',
+                                         self.trainer.model.__class__.__name__.split('.')[-1])
+        self.logger.experiment.log_param(run_id, 'optimizers', self.optimizers())
+        self.logger.experiment.log_param(run_id, 'task', self.trainer.model.task)
+        self.logger.experiment.log_param(run_id, 'train_set', len(self.trainer.datamodule.train_dataset))
+        self.logger.experiment.log_param(run_id, 'test_set', len(self.trainer.datamodule.test_dataset))
+        self.logger.experiment.log_param(run_id, 'val_set', len(self.trainer.datamodule.val_dataset))
+
+        #  get the filepath of the config file that the user provided and save to MLFlow
+        config_path = sys.argv[sys.argv.index('-c') + 1]
+        self.logger.experiment.log_artifact(run_id, config_path)
+
+    def on_test_epoch_start(self) -> None:
+        self.label_map = self.trainer.datamodule.label_map
+
+    def on_test_end(self) -> None:
+        if self.mAP:
+            mAP = self.mAP.compute()
+            self.log_precision(mAP)
+
+    def log_precision(self, precision):
+        classes = precision.pop('classes', None)  # get the classes but don't log them
+
+        for k, v in precision.items():
+            k = k.replace('map', 'mAP').replace('mar', 'mAR')
+            class_values = v.tolist()
+
+            # handling single class vs multiclass
+            if k in ('mAP_per_class', 'mAR_100_per_class'):
+                for pair in zip(classes, class_values):  # log each class metric separately
+                    k = k.replace('_per_class', '')
+                    self.label_map[int(pair[0])]
+                    self.logger.experiment.log_metric(
+                        self.logger.run_id, f'{k}_{self.label_map[int(pair[0])]}', pair[1])
+            else:
+                self.logger.experiment.log_metric(self.logger.run_id, k, class_values)
 
 
 class ZapDataModule(LightningDataModule):
     def __init__(self) -> None:
         super().__init__()
+
+        # we get the data_dir from the data module class that inherits this class
+        self.data_dir = getattr(self, 'data_dir', None)
+        if not self.data_dir:
+            raise AttributeError('Missing data directory')
+
+        self.predict_dir = self.data_dir / 'predict' / 'images'
+        prediction_images = list(self.predict_dir.glob('*.png')) + list(self.predict_dir.glob('*.jpg'))
+        self.predict_dataset = InferenceDataset(prediction_images, transforms=self.transforms)
+
+        # batch the images and expose for convenience during inference
+        self.prediction_images = []
+        for i in range(0, len(prediction_images), self.batch_size):
+            self.prediction_images.append(tuple(prediction_images[i:i + self.batch_size]))
 
     def prepare_data(self, bucket=None):
         # NOTE: do not assign state here (e.g: self.x = 123)
@@ -60,8 +125,6 @@ class ZapDataModule(LightningDataModule):
             pass  # TODO: download data from bucket/database
 
     def setup(self, stage):
-        # NOTE: this is called for each of trainer.train|test|validate
-        # as such I don't see why we need to split the datasets here and not in the __init__
         pass
 
     def train_dataloader(self):
@@ -80,15 +143,16 @@ class ZapDataModule(LightningDataModule):
                           shuffle=False, collate_fn=self.collate_fn)
 
     def predict_dataloader(self):
+        collate_fn = self.predict_collate_fn if hasattr(self, 'predict_collate_fn') else None
         return DataLoader(self.predict_dataset, batch_size=self.batch_size,
                           num_workers=self.num_workers, pin_memory=self.pin_memory,
-                          shuffle=False, collate_fn=self.collate_fn)
+                          shuffle=False, collate_fn=collate_fn)
 
 
 class InferenceDataset(Dataset):
-    def __init__(self, images, transform=None) -> None:
+    def __init__(self, images, transforms=None) -> None:
         self.images = images
-        self.transform = transform
+        self.transforms = transforms
         super().__init__()
 
     def __len__(self):
@@ -97,7 +161,8 @@ class InferenceDataset(Dataset):
     def __getitem__(self, index: int) -> Any:
         img = Image.open(self.images[index]).convert('RGB')
 
-        if self.transform is not None:
-            img = self.transform(img)
+        if self.transforms is not None:
+            img = self.transforms(img)
 
+        # TODO: test compatibility with all models
         return img

@@ -4,8 +4,16 @@ dist/
 data/
 lightning_logs/
 mlruns/
+configs/
+checkpoints/
 
 *.DS_Store
 *.python-version
 *.env
 *.db
+*.zip
+
+# temporary files
+temp/
+temp_*
+temp.*

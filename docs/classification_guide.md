@@ -2,7 +2,7 @@
 
 ## Data setup
 
-Zap expects to find your images and labels in specific folders. Whilst you can create this folder structure anywhere, the following guide will create it inside a `data` folder at the root of your project. With that said, this `data` folder **must** have an `images` folder, a `labels.csv` file and a `label_map.json` file.
+Zap expects to find your images and labels in specific folders. Whilst you can create this folder structure anywhere, the following guide will create it inside a `data` folder at the root of your project. With that said, this `data` folder **must** have an `images` folder and your training set, `labels.csv`.
 
 Place all of your images in the `images` folder. You do not need to split them into training, testing and validation sets; Zap will do that for you.
 
@@ -15,7 +15,6 @@ your_project/
 │   │   ├── image_01.jpg
 │   │   └── ...
 │   ├── labels.csv
-│   ├── label_map.json
 │   └── predict/
 │       └── image_99.jpg
 ├── main.py
@@ -31,17 +30,6 @@ image_02.jpg,dog
 ...
 ```
 
-And `label_map.json` needs to look something like this:
-
-```json
-{
-  "label_map": {
-    "cat": 0,
-    "dog": 1
-  }
-}
-```
-
 ## Configuration File
 
 Almost everything to do with controlling Zap happens from the configuration file. Zap has already done lot of the base configuration for you. We just need to tell it 3 things:
@@ -51,6 +39,9 @@ Almost everything to do with controlling Zap happens from the configuration file
 - the **optimizer** we want to use
 
 Here's an example configuration file that uses ResNet34 with some basic augmentations/transforms.
+
+> [!IMPORTANT]  
+> When running inference, keep only the `ToTensor` and `Resize` transforms and set shuffling to `False`
 
 ```yaml
 model:
@@ -63,6 +54,9 @@ data:
   class_path: zap.classification.data_modules.ClassificationDataModule
   init_args:
     data_dir: data
+    label_map:
+      cat: 0
+      dog: 1
     transforms:
       - class_path: torchvision.transforms.ToTensor
       - class_path: torchvision.transforms.Resize

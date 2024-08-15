@@ -32,20 +32,20 @@ class DeepLabV3Plus(pl.LightningModule):
         img, gt = batch
         output = self.model(img)
         loss = self.loss_fn(output, gt)
-        self.log('train_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('train_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         img, gt = batch
         output = self.model(img)
         loss = self.loss_fn(output, gt)
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('val_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         img, gt = batch
         output = self.model(img)
         loss = self.loss_fn(output, gt)
-        self.log('test_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('test_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
 
 
 class UNet(pl.LightningModule):
@@ -73,17 +73,17 @@ class UNet(pl.LightningModule):
         img, gt = batch
         output = self.model(img)
         loss = self.loss_fn(output, gt)
-        self.log('train_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('train_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         img, gt = batch
         output = self.model(img)
         loss = self.loss_fn(output, gt)
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('val_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
 
     def test_step(self, batch, batch_idx):
         img, gt = batch
         output = self.model(img)
         loss = self.loss_fn(output, gt)
-        self.log('test_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('test_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)

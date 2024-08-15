@@ -5,10 +5,10 @@ from torch.utils.data import Dataset
 
 
 class SegmentationDataset(Dataset):
-    def __init__(self, images, masks, transform=None) -> None:
+    def __init__(self, images, masks, transforms=None) -> None:
         self.images = images
         self.masks = masks
-        self.transform = transform
+        self.transforms = transform
         super().__init__()
 
     def __len__(self):
@@ -18,7 +18,7 @@ class SegmentationDataset(Dataset):
         img = Image.open(self.images[index]).convert('RGB')
         mask = Image.open(self.masks[index]).convert('L')
 
-        if self.transform is not None:
+        if self.transforms is not None:
             img = self.transform(img)
             mask = self.transform(mask)
 
