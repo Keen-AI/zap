@@ -36,20 +36,20 @@ class ResNet34(ZapModel):
         output = self.model(img)
 
         loss = self.loss_fn(output, label)
-        self.log('train_loss', loss, on_epoch=True, on_step=True)
+        self.log('train_loss', loss, batch_size=len(batch), on_epoch=True, on_step=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
         img, label = batch
         output = self.model(img)
         loss = self.loss_fn(output, label)
-        self.log('val_loss', loss, on_epoch=True, on_step=True)
+        self.log('val_loss', loss, batch_size=len(batch), on_epoch=True, on_step=True)
 
     def test_step(self, batch, batch_idx):
         img, label = batch
         output = self.model(img)
         loss = self.loss_fn(output, label)
-        self.log('test_loss', loss)
+        self.log('test_loss', loss, batch_size=len(batch))
 
         self.multiclass_precision(output, label)
         self.multiclass_recall(output, label)
