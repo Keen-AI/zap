@@ -7,7 +7,7 @@ from .formatter import (format_lightning_warnings_and_logs,
 
 supress_pydantic_warnings()  # noqa
 
-from typing import Any, Dict  # noqa
+from typing import Any  # noqa
 
 from lightning.pytorch import LightningDataModule, LightningModule  # noqa
 from lightning.pytorch.cli import LightningCLI  # noqa
