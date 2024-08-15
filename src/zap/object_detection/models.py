@@ -96,9 +96,9 @@ class Deta(ZapModel):
         if not loss:
             return None
 
-        self.log("train_loss", loss)
+        self.log("train_loss", loss, batch_size=len(batch))
         for k, v in loss_dict.items():
-            self.log("train_" + k, v.item())
+            self.log("train_" + k, v.item(), batch_size=len(batch))
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -106,9 +106,9 @@ class Deta(ZapModel):
         if not loss:
             return None
 
-        self.log("val_loss", loss)
+        self.log("val_loss", loss, batch_size=len(batch))
         for k, v in loss_dict.items():
-            self.log("validation_" + k, v.item())
+            self.log("validation_" + k, v.item(), batch_size=len(batch))
 
         return loss
 
@@ -183,10 +183,10 @@ class FasterRCNN(ZapModel):
 
         loss_dict = self.model(images, targets)
         for k, v in loss_dict.items():
-            self.log("train_" + k, v.item(), on_epoch=True)
+            self.log("train_" + k, v.item(), batch_size=len(batch), on_epoch=True)
 
         loss = sum(loss for loss in loss_dict.values())
-        self.log('train_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('train_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
         return loss
 
     def validation_step(self, batch, batch_idx):
@@ -194,10 +194,10 @@ class FasterRCNN(ZapModel):
 
         loss_dict = self.model(images, targets)
         for k, v in loss_dict.items():
-            self.log("val_" + k, v.item(), on_epoch=True)
+            self.log("val_" + k, v.item(), batch_size=len(batch), on_epoch=True)
 
         loss = sum(loss for loss in loss_dict.values())
-        self.log('val_loss', loss, on_epoch=True, prog_bar=True)
+        self.log('val_loss', loss, batch_size=len(batch), on_epoch=True, prog_bar=True)
         return loss
 
     def test_step(self, batch, batch_idx):
