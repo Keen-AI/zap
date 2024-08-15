@@ -110,8 +110,10 @@ class FasterRCNNDataModule(ZapDataModule):
         self.pin_memory = pin_memory
         self.shuffle = shuffle
 
-        # TODO: need to incorporate user given transforms
-        self.transforms = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT.transforms()
+        # NOTE: default transforms are not compatible with ToTensor; should warn user?
+        # NOTE: from testing on generated dataset, anything other than the default transforms yields terrible results
+        default_transforms = FasterRCNN_ResNet50_FPN_V2_Weights.DEFAULT.transforms()
+        self.transforms = Compose([default_transforms, *transforms])
 
         dataset = FasterRCNNDataset(
             img_folder=self.data_dir / 'images',
