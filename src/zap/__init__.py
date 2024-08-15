@@ -1,4 +1,5 @@
 import os
+import sys
 
 from dotenv import load_dotenv
 
@@ -28,7 +29,6 @@ class Zap():
         self.cli = LightningCLI(save_config_kwargs={"overwrite": True}, save_config_callback=None, run=False,
                                 parser_kwargs={"parser_mode": "omegaconf",
                                                "default_config_files": [base_config_path]})
-        self.config = self.cli.config.as_dict()
 
     def fit(self):
         self.cli.trainer.fit(self.cli.model, self.cli.datamodule)
@@ -69,6 +69,10 @@ class ZapModel(LightningModule):
         self.logger.experiment.log_param(run_id, 'train_set', len(self.trainer.datamodule.train_dataset))
         self.logger.experiment.log_param(run_id, 'test_set', len(self.trainer.datamodule.test_dataset))
         self.logger.experiment.log_param(run_id, 'val_set', len(self.trainer.datamodule.val_dataset))
+
+        #  get the filepath of the config file that the user provided and save to MLFlow
+        config_path = sys.argv[sys.argv.index('-c') + 1]
+        self.logger.experiment.log_artifact(run_id, config_path)
 
     def on_test_epoch_start(self) -> None:
         self.label_map = self.trainer.datamodule.label_map
