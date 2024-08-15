@@ -30,10 +30,6 @@ class Zap():
                                                "default_config_files": [base_config_path]})
         self.config = self.cli.config.as_dict()
 
-        self.cli.trainer.logger.log_hyperparams({'zap_model': self.config['model']['class_path'].split('.')[-1]})
-        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
-        self.cli.trainer.logger.log_hyperparams({'optimizer': self.config.get('optimizer')})
-
     def fit(self):
         self.cli.trainer.fit(self.cli.model, self.cli.datamodule)
 
@@ -41,11 +37,15 @@ class Zap():
         self.cli.trainer.test(self.cli.model, self.cli.datamodule, ckpt_path=ckpt_path)
 
     def predict(self, ckpt_path="last"):
+        # Not sure if there's a better way but this fixes prediction runs being logged in MLFlow
+        self.cli.trainer.logger = None
+
         preds = self.cli.trainer.predict(
             self.cli.model,
             self.cli.datamodule,
             return_predictions=True,
             ckpt_path=ckpt_path)
+
         return preds
 
 
@@ -59,11 +59,16 @@ class ZapModel(LightningModule):
         if self.task == 'object_detection':
             self.mAP = MeanAveragePrecision(class_metrics=True)
 
-    def on_fit_end(self) -> None:
-        self.logger.experiment.log_param(self.logger.run_id, 'task', self.trainer.model.task)
-        self.logger.experiment.log_param(self.logger.run_id, 'train_set', len(self.trainer.datamodule.train_dataset))
-        self.logger.experiment.log_param(self.logger.run_id, 'test_set', len(self.trainer.datamodule.test_dataset))
-        self.logger.experiment.log_param(self.logger.run_id, 'val_set', len(self.trainer.datamodule.val_dataset))
+    def on_fit_start(self) -> None:
+        run_id = self.logger.run_id
+
+        self.logger.experiment.log_param(run_id, 'zap_model',
+                                         self.trainer.model.__class__.__name__.split('.')[-1])
+        self.logger.experiment.log_param(run_id, 'optimizers', self.optimizers())
+        self.logger.experiment.log_param(run_id, 'task', self.trainer.model.task)
+        self.logger.experiment.log_param(run_id, 'train_set', len(self.trainer.datamodule.train_dataset))
+        self.logger.experiment.log_param(run_id, 'test_set', len(self.trainer.datamodule.test_dataset))
+        self.logger.experiment.log_param(run_id, 'val_set', len(self.trainer.datamodule.val_dataset))
 
     def on_test_epoch_start(self) -> None:
         self.label_map = self.trainer.datamodule.label_map
